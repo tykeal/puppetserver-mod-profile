@@ -1,0 +1,65 @@
+import jenkins.*
+import jenkins.model.*
+import hudson.*
+import hudson.model.*
+import hudson.security.*
+import org.jenkinsci.plugins.*
+
+def instance = Jenkins.getInstance()
+
+def LDAPRealm = new LDAPSecurityRealm(
+<% if @jenkins_ldap.has_key?('server') -%>
+        '<%= @jenkins_ldap['server'] -%>',
+<% else -%>
+        null,
+<% end -%>
+<% if @jenkins_ldap.has_key?('rootDN') -%>
+        '<%= @jenkins_ldap['rootDN'] -%>',
+<% else -%>
+        null,
+<% end -%>
+<% if @jenkins_ldap.has_key?('userSearchBase') -%>
+        '<%= @jenkins_ldap['userSearchBase'] -%>',
+<% else -%>
+        null,
+<% end -%>
+<% if @jenkins_ldap.has_key?('userSearch') -%>
+        '<%= @jenkins_ldap['userSearch'] -%>',
+<% else -%>
+        'uid={0}',
+<% end -%>
+<% if @jenkins_ldap.has_key?('groupSearchBase') -%>
+        '<%= @jenkins_ldap['groupSearchBase'] -%>',
+<% else -%>
+        null,
+<% end -%>
+<% if @jenkins_ldap.has_key?('managerDN') -%>
+        '<%= @jenkins_ldap['managerDN'] -%>',
+<% else -%>
+        null,
+<% end -%>
+<% if @jenkins_ldap.has_key?('managerPassword') -%>
+        '<%= @jenkins_ldap['managerPassword'] -%>',
+<% else -%>
+        null,
+<% end -%>
+<% if @jenkins_ldap.has_key?('inhibitInferRootDN') -%>
+        <%= @jenkins_ldap['inhibitInferRootDN'] -%>
+<% else -%>
+        false
+<% end %>
+    )
+
+instance.setSecurityRealm(LDAPRealm)
+
+def strategy = new GlobalMatrixAuthorizationStrategy()
+
+<% @jenkins_matrix.each do |key, user_group_arr| -%>
+<% user_group_arr.each do |user_group| -%>
+strategy.add(<%= key -%>, '<%= user_group -%>')
+<% end -%>
+<% end -%>
+
+instance.setAuthorizationStrategy(strategy)
+
+instance.save()
