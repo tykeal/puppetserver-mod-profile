@@ -7,11 +7,6 @@ class profile::users::root {
     recipient => $roothiera['mailalias'],
   }
 
-  file { '/root/.vimrc':
-    ensure => present,
-    source => 'puppet:///modules/profile/users/dotfiles/dot.vimrc',
-  }
-
   file { '/root/.bashrc':
     ensure => present,
     source => 'puppet:///modules/profile/users/dotfiles/root-dot.bashrc',
