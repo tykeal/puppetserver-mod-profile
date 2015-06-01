@@ -9,16 +9,14 @@ class profile::gerrit {
   validate_string($gerrit_config['gerrit']['canonicalWebUrl'])
   validate_string($gerrit_config['httpd']['listenUrl'])
 
-  $canonical_tmp = "<% url_tmp = gerrit_config['gerrit']['canonicalWebUrl'] -%>"
-  $listen_tmp = "<% url_tmp = gerrit_config['httpd']['listenUrl'] -%>"
-  $urlParser = '<% url_matches = url_tmp.match /^(proxy-)?(http|https):\/\/(([a-z0-9]+[\-\.]{1}[a-z0-9]+*\.[a-z]{2,})|\*)(:([0-9]{1,5}))?(\/.*)?$/ix -%>'
+  $urlParser = '^(proxy-)?(http|https):\/\/(([a-z0-9]+[\-\.]{1}[a-z0-9]+*\.[a-z]{2,})|\*)(:([0-9]{1,5}))?(\/.*)?$'
 
-  $sitename = inline_template("${canonical_tmp}\n${urlParser}\n<%= url_matches[3] -%>")
-  $backend_listenport = inline_template("${listen_tmp}\n${urlParser}\n<%= url_matches[6] -%>")
+  $sitename = regsubst($gerrit_config['gerrit']['canonicalWebUrl'], $urlParser, '\3', 'EI')
+  $backend_listenport = regsubst($gerrit_config['httpd']['listenUrl'], $urlParser, '\6', 'EI')
 
   # assume that a) a suburl is being used and b) that it matches on the
   # listenUrl side
-  $suburl = inline_template("${canonical_tmp}\n${urlParser}\n<%= url_matches[7] -%>")
+  $suburl = regsubst($gerrit_config['gerrit']['canonicalWebUrl'], $urlParser, '\7', 'EI')
 
   # need to load the SSL information so that it can be used
   $ssl_cert_name = hiera('nginx::ssl_cert_name')
