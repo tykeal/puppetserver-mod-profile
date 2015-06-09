@@ -19,6 +19,13 @@ class profile::nginx {
     create_resources(sslmgmt::cert, $sslcerts)
   }
 
+  # ca cert / dhparam files to push
+  $cacerts = hiera('nginx::cacerts')
+  if (is_hash($cacerts)) {
+    # push all the ca certs / dhparam files
+    create_resources(sslmgmt::ca_dh, $cacerts)
+  }
+
   # for now until we come up with a way to nicely read out all the ports
   # we listen on, we'll just automatically open 80 & 443
   firewall { '030 accept incoming HTTP and HTTPS traffic':

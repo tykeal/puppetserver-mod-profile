@@ -21,6 +21,7 @@ class profile::gerrit {
   # need to load the SSL information so that it can be used
   $ssl_cert_name = hiera('nginx::ssl_cert_name')
   $ssl_cert_chain = hiera('nginx::ssl_cert_chain')
+  $ssl_dhparam = hiera('nginx::ssl_dhparam')
 
   @@nginx::resource::vhost { "nginx_gerrit-${::fqdn}":
     ensure                        => present,
@@ -34,6 +35,7 @@ class profile::gerrit {
     ssl                           => true,
     ssl_cert                      => "/etc/pki/tls/certs/${ssl_cert_name}-${ssl_cert_chain}.pem",
     ssl_key                       => "/etc/pki/tls/private/${ssl_cert_name}.pem",
+    ssl_dhparam                   => "/etc/pki/tls/certs/${ssl_dhparam}.pem",
     rewrite_to_https              => true,
     add_header                    => {
       'Strict-Transport-Security' => 'max-age=1209600'
