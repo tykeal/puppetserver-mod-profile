@@ -8,11 +8,14 @@ class profile::puppet::master {
   $puppetmaster = hiera('puppet::master')
   validate_hash($puppetmaster)
 
-  # since r10k seems to have issues with parser = future being turned on
-  # we can't use a lambda to loop over the settings using a define
-  ini_setting { 'puppet.conf/master/reports':
-    setting => 'reports',
-    value   => $puppetmaster['reports'],
+  # Puppet 4 supports lambda functions, this allows us an easy way to
+  # loop over the keys of a hash and create resources that we wouldn't
+  # be able to using create_resources
+  $puppetmaster.each |String $conf_setting, String $conf_value| {
+    ini_setting { "puppet.conf/master/${conf_setting}":
+      setting => $conf_setting,
+      value   => $conf_value,
+    }
   }
 
   # push opsgenie configuration
