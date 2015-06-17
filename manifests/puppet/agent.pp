@@ -27,7 +27,7 @@ class profile::puppet::agent {
   if is_hash($puppetmain) {
     # apply any settings that may be coming in
     $puppetmain.each |String $conf_setting, String $conf_value| {
-      ini_setting { "puppet.conf/main/${conf_setting":
+      ini_setting { "puppet.conf/main/${conf_setting}":
         section => 'main',
         setting => $conf_setting,
         value   => $conf_value,
