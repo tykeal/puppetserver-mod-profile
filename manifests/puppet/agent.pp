@@ -5,20 +5,34 @@ class profile::puppet::agent {
   validate_string($puppetserver)
 
   Ini_setting {
-    section => 'agent',
     path    => "${::settings::confdir}/puppet.conf",
     ensure  => present,
     notify  => Service['puppet'],
   }
 
   ini_setting { 'puppet.conf/agent/report':
+    section => 'agent',
     setting => 'report',
     value   => true,
   }
 
   ini_setting { 'puppet.conf/agent/server':
+    section => 'agent',
     setting => 'server',
     value   => $puppetserver
+  }
+
+  # load settings that should be in the global puppet main section
+  $puppetmain = hiera('puppet::main', undef)
+  if is_hash($puppetmain) {
+    # apply any settings that may be coming in
+    $puppetmain.each |String $conf_setting, String $conf_value| {
+      ini_setting { "puppet.conf/main/${conf_setting":
+        section => 'main',
+        setting => $conf_setting,
+        value   => $conf_value,
+      }
+    }
   }
 
   # Always make sure puppet agent is running
