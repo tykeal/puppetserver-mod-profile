@@ -1,7 +1,7 @@
 class profile::bacula::storage {
   include ::bacula::storage
 
-  $port=hiera('bacula::director::port',9103)
+  $port=hiera('bacula::storage::port',9103)
   validate_integer($port)
 
   firewall { '060 accept bacula storage connections':
