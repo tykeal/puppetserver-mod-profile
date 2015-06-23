@@ -7,7 +7,7 @@ class profile::mailman3 {
   include ::profile::smtp
   include ::uwsgi
 
-  $allowed_hosts = hiera('mailman3::web::allowed_hosts')
+  $allowed_hosts = hiera('mailman3::web::firewall_allowed_hosts')
   validate_string($allowed_hosts)
 
   $port   = hiera('mailman3::web::uwsgi_port')
