@@ -4,7 +4,7 @@ class profile::bacula::client {
   $port=hiera('bacula::client::port',9102)
   validate_integer($port)
 
-  $bacula_jobs = hiera('bacula::job', undef)
+  $bacula_jobs = hiera_hash('bacula::job', undef)
   if is_hash($bacula_jobs) {
     create_resources(::bacula::job, $bacula_jobs)
   }
