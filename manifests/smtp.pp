@@ -21,10 +21,18 @@ class profile::smtp {
     create_resources(::postfix::virtual, $postfix_virtuals)
   }
 
+  # are we dealing with mailman3? If so, we need to load our custom
+  # ::postfix::mta replacement class and also open the firewall
+  $mailman3 = hiera('postfix::mailman3', false)
+
+  if ($mailman3) {
+    include ::profile::smtp::mailman3
+  }
+
   # handle opening the firewall when we're an mta (we don't need this
   # for satellite systems)
   $mta = hiera('postfix::mta', false)
-  if ($mta) {
+  if ($mta or $mailman3) {
     # SMTP operates on port 25 by definition, if the server isn't
     # operating on that port there is likely an issue
     firewall { '025 accept all SMTP traffic':
