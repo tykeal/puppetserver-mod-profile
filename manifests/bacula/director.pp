@@ -6,6 +6,11 @@ class profile::bacula::director {
     create_resources(::bacula::schedule, $bacula_schedules)
   }
 
+  $bacula_jobdefs = hiera_hash('bacula::jobdefs', undef)
+  if is_hash($bacula_jobdefs) {
+    create_resources(::bacula::jobdefs, $bacula_jobdefs)
+  }
+
   $port=hiera('bacula::director::port',9101)
   validate_integer($port)
 
