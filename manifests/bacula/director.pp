@@ -11,6 +11,11 @@ class profile::bacula::director {
     create_resources(::bacula::jobdefs, $bacula_jobdefs)
   }
 
+  $bacula_pools = hiera_hash('bacula::director::pool', undef)
+  if is_hash($bacula_pools) {
+    create_resources('@@bacula::director::pool', $bacula_pools)
+  }
+
   $port=hiera('bacula::director::port',9101)
   validate_integer($port)
 
