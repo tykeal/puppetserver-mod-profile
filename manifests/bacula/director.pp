@@ -16,6 +16,19 @@ class profile::bacula::director {
     create_resources('@@bacula::director::pool', $bacula_pools)
   }
 
+  if hiera('collabbacula', false) {
+
+    $conf_dir=hiera('bacula::params::conf_dir','/etc/bacula',)
+    validate_string($conf_dir)
+
+    concat::fragment { 'bacula-director-extra':
+      order   => '999999',
+      target  => "${conf_dir}/bacula-dir.conf",
+      content => '@/etc/bacula/conf.d/myconf.conf'
+      require => Class['::bacula::director']
+    }
+  }
+
   $port=hiera('bacula::director::port',9101)
   validate_integer($port)
 
