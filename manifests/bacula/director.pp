@@ -25,7 +25,6 @@ class profile::bacula::director {
       order   => '999999',
       target  => "${conf_dir}/bacula-dir.conf",
       content => '@/etc/bacula/conf.d/myconf.conf',
-      require => Class['::bacula::director']
     }
   }
 
