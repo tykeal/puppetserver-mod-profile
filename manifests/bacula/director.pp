@@ -24,7 +24,7 @@ class profile::bacula::director {
     concat::fragment { 'bacula-director-extra':
       order   => '999999',
       target  => "${conf_dir}/bacula-dir.conf",
-      content => '@/etc/bacula/conf.d/myconf.conf',
+      content => "@/etc/bacula/conf.d/myconf.conf\n",
     }
   }
 
