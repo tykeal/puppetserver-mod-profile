@@ -25,7 +25,7 @@ class profile::bacula::client {
     seltype  => 'bacula_store_t',
     seluser  => 'system_u',
     selrole  => 'object_r',
-    require  => Package['$::bacula::params::bacula_client_packages'],
+    require  => Package[$::bacula::params::bacula_client_packages],
   }
 
 }
