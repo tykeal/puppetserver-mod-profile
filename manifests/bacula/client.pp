@@ -1,5 +1,6 @@
 class profile::bacula::client {
   include ::bacula::client
+  include ::bacula::params
 
   $port=hiera('bacula::client::port',9102)
   validate_integer($port)
@@ -14,6 +15,17 @@ class profile::bacula::client {
     port   => $port,
     state  => ['NEW'],
     action => accept,
+  }
+
+  file { '/bacula':
+    ensure   => directory,
+    owner    => 'bacula',
+    group    => 'bacula',
+    mode     => '0660',
+    seltype  => 'bacula_store_t',
+    seluser  => 'system_u',
+    selrole  => 'object_r',
+    require  => Package['::bacula::params::bacula_client_packages'],
   }
 
 }
