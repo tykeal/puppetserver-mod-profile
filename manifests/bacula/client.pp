@@ -17,15 +17,17 @@ class profile::bacula::client {
     action => accept,
   }
 
-  file { '/bacula':
-    ensure   => directory,
-    owner    => 'bacula',
-    group    => 'bacula',
-    mode     => '0660',
-    seltype  => 'bacula_store_t',
-    seluser  => 'system_u',
-    selrole  => 'object_r',
-    require  => Package[$::bacula::params::bacula_client_packages],
+  unless defined(File['/bacula']) {
+    file { '/bacula':
+      ensure   => directory,
+      owner    => 'bacula',
+      group    => 'bacula',
+      mode     => '0660',
+      seltype  => 'bacula_store_t',
+      seluser  => 'system_u',
+      selrole  => 'object_r',
+      require  => Package[$::bacula::params::bacula_client_packages],
+    }
   }
 
 }
