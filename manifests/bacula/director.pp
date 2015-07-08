@@ -26,7 +26,7 @@ class profile::bacula::director {
       ensure  => file,
       owner   => 'root',
       group   => 'bacula',
-      mode    => '0640'
+      mode    => '0640',
       content => template("${module_name}/bacula/legacy_puppet.conf.erb"),
     }
 
