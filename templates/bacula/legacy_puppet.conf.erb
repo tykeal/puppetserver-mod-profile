@@ -1,0 +1,163 @@
+Client {
+    Name           = pdx-wl-logmon.int.codeaurora.org-fd
+    Address        = pdx-wl-logmon.int.codeaurora.org 
+    FDPort         = 9102
+    Catalog        = MyCatalog
+    Password       = "<%= @client_password %>"
+    File Retention = 45 days
+    Job Retention  = 6 months
+    AutoPrune      = yes
+
+}
+
+FileSet {
+  Name = pdx-wl-logmon.int.codeaurora.org-etc
+  Include {
+    Options {
+      signature = MD5
+      compression = GZIP
+    }
+    File = /etc
+  }
+  Exclude {
+  }
+}
+
+FileSet {
+  Name = pdx-wl-logmon.int.codeaurora.org-etc-diff
+  Include {
+    Options {
+      signature = MD5
+      compression = GZIP
+    }
+    File = /etc
+  }
+  Exclude {
+  }
+}
+
+FileSet {
+  Name = pdx-wl-logmon.int.codeaurora.org-root
+  Include {
+    Options {
+      signature = MD5
+      compression = GZIP
+    }
+    File = /root
+  }
+  Exclude {
+  }
+}
+
+FileSet {
+  Name = pdx-wl-logmon.int.codeaurora.org-root-diff
+  Include {
+    Options {
+      signature = MD5
+      compression = GZIP
+    }
+    File = /root
+  }
+  Exclude {
+  }
+}
+
+FileSet {
+  Name = pdx-wl-logmon.int.codeaurora.org-var-log
+  Include {
+    Options {
+      signature = MD5
+      compression = GZIP
+    }
+    File = /var/log
+  }
+  Exclude {
+  }
+}
+
+FileSet {
+  Name = pdx-wl-logmon.int.codeaurora.org-var-log-diff
+  Include {
+    Options {
+      signature = MD5
+      compression = GZIP
+    }
+    File = /var/log
+  }
+  Exclude {
+  }
+}
+
+
+Job {
+    Name             = pdx-wl-logmon.int.codeaurora.org-etc
+    Type             = Backup
+    Client           = pdx-wl-logmon.int.codeaurora.org-fd
+    FileSet          = pdx-wl-logmon.int.codeaurora.org-etc
+    Pool             = Default
+    Full Backup Pool        = pdx-wl-bacula.int.codeaurora.org-Pool-Full
+    Incremental Backup Pool = pdx-wl-bacula.int.codeaurora.org-Pool-Inc
+    JobDefs          = "Default"
+    Accurate         = no
+}
+
+Job {
+    Name             = pdx-wl-logmon.int.codeaurora.org-etc-diff
+    Type             = Backup
+    Client           = pdx-wl-logmon.int.codeaurora.org-fd
+    FileSet          = pdx-wl-logmon.int.codeaurora.org-etc-diff
+    Pool             = Default
+    Full Backup Pool        = pdx-wl-bacula.int.codeaurora.org-Pool-Full
+    Incremental Backup Pool = pdx-wl-bacula.int.codeaurora.org-Pool-Inc
+    JobDefs          = "diffs"
+    Accurate         = no
+}
+
+Job {
+    Name             = pdx-wl-logmon.int.codeaurora.org-root
+    Type             = Backup
+    Client           = pdx-wl-logmon.int.codeaurora.org-fd
+    FileSet          = pdx-wl-logmon.int.codeaurora.org-root
+    Pool             = Default
+    Full Backup Pool        = pdx-wl-bacula.int.codeaurora.org-Pool-Full
+    Incremental Backup Pool = pdx-wl-bacula.int.codeaurora.org-Pool-Inc
+    JobDefs          = "Default"
+    Accurate         = no
+}
+
+Job {
+    Name             = pdx-wl-logmon.int.codeaurora.org-root-diff
+    Type             = Backup
+    Client           = pdx-wl-logmon.int.codeaurora.org-fd
+    FileSet          = pdx-wl-logmon.int.codeaurora.org-root-diff
+    Pool             = Default
+    Full Backup Pool        = pdx-wl-bacula.int.codeaurora.org-Pool-Full
+    Incremental Backup Pool = pdx-wl-bacula.int.codeaurora.org-Pool-Inc
+    JobDefs          = "diffs"
+    Accurate         = no
+}
+
+Job {
+    Name             = pdx-wl-logmon.int.codeaurora.org-var-log
+    Type             = Backup
+    Client           = pdx-wl-logmon.int.codeaurora.org-fd
+    FileSet          = pdx-wl-logmon.int.codeaurora.org-var-log
+    Pool             = Default
+    Full Backup Pool        = pdx-wl-bacula.int.codeaurora.org-Pool-Full
+    Incremental Backup Pool = pdx-wl-bacula.int.codeaurora.org-Pool-Inc
+    JobDefs          = "Default"
+    Accurate         = no
+}
+
+Job {
+    Name             = pdx-wl-logmon.int.codeaurora.org-var-log-diff
+    Type             = Backup
+    Client           = pdx-wl-logmon.int.codeaurora.org-fd
+    FileSet          = pdx-wl-logmon.int.codeaurora.org-var-log-diff
+    Pool             = Default
+    Full Backup Pool        = pdx-wl-bacula.int.codeaurora.org-Pool-Full
+    Incremental Backup Pool = pdx-wl-bacula.int.codeaurora.org-Pool-Inc
+    JobDefs          = "diffs"
+    Accurate         = no
+}
+

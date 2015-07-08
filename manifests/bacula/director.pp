@@ -20,11 +20,20 @@ class profile::bacula::director {
 
     $conf_dir=hiera('bacula::params::conf_dir','/etc/bacula',)
     validate_string($conf_dir)
+    $client_password=hiera('bacula::client::password', undef)
+
+    file { "${conf_dir}/conf.d/legacy_puppet.conf":
+      ensure  => file,
+      owner   => 'root',
+      group   => 'bacula',
+      mode    => '0640'
+      content => template("${module_name}/bacula/legacy_puppet.conf.erb"),
+    }
 
     concat::fragment { 'bacula-director-extra':
       order   => '999999',
       target  => "${conf_dir}/bacula-dir.conf",
-      content => "@/etc/bacula/conf.d/myconf.conf\n",
+      content => "@/etc/bacula/conf.d/legacy_puppet.conf\n",
     }
   }
 
