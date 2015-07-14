@@ -17,7 +17,7 @@ class profile::bacula::client {
     action => accept,
   }
 
-  unless ($::fqdn == hiera('bacula::params::bacula_storage')) {
+  unless ($::fqdn == hiera('bacula::params::bacula_storage', undef)) {
     file { '/bacula':
       ensure   => directory,
       owner    => 'bacula',
