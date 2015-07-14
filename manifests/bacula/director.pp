@@ -47,16 +47,16 @@ class profile::bacula::director {
     action => 'accept'
   }
 
-  file {'/var/lib/pgsql/pgbackup.sh
-    owner  => 'postgres',
-    group  => 'postgres',
-    mode   => '0700',
-    source => "puppet:///modules/${module_name}/bacula/pgbackup.sh",
+  file {'/var/lib/pgsql/pgbackup.sh':
+    owner   => 'postgres',
+    group   => 'postgres',
+    mode    => '0700',
+    source  => "puppet:///modules/${module_name}/bacula/pgbackup.sh",
     require => Class[::postgresql::server]
   }
 
-  cron { pgbackup:
-    command => "/var/lib/pgsql/pgbackup.sh",
+  cron { 'pgbackup':
+    command => '/var/lib/pgsql/pgbackup.sh',
     user    => postgres,
     hour    => 3,
     minute  => 0,
