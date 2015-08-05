@@ -33,7 +33,7 @@ class profile::nagios::client {
     create_resources('nrpe::command', $nrpe_commands)
   }
 
-  nagios_plugin_path = hiera('nagios_plugin_path', '/usr/lib64/nagios/plugins')
+  $nagios_plugin_path = hiera('nagios_plugin_path', '/usr/lib64/nagios/plugins')
   # we have a few nrpe commands that have need of dynamically generated
   # variables which we can't do in hiera
 
