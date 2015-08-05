@@ -32,4 +32,43 @@ class profile::nagios::client {
     validate_hash($nrpe_commands)
     create_resources('nrpe::command', $nrpe_commands)
   }
+
+  nagios_plugin_path = hiera('nagios_plugin_path', '/usr/lib64/nagios/plugins')
+  # we have a few nrpe commands that have need of dynamically generated
+  # variables which we can't do in hiera
+
+  #### check_total_procs
+
+  # The following values are what CAF was using, LFCore had lower values
+  $procwarn = $::processorcount * 28 + 600
+  $procmax = $::processorcount * 32 + 800
+
+  nrpe::command { 'check_total_procs':
+    command => "${nagios_plugin_path}/check_procs -w ${procwarn} -c ${procmax}",
+  }
+
+  #### check_load
+  $varwarn = 2
+  $varcrit = 3
+
+  if ($::processorcount < 6) {
+    $warn01min = 12
+    $warn05min = 10
+    $warn15min = 8
+    $crit01min = 22
+    $crit05min = 18
+    $crit15min = 14
+  }
+  else {
+    $warn01min = $::processorcount * $varwarn
+    $warn05min = $warn01min - $varwarn
+    $warn15min = $warn01min - (2 * $varwarn)
+    $crit01min = $::processorcount * $varcrit
+    $crit05min = $crit01min - $varcrit
+    $crit15min = $crit01min - (2 * $varcrit)
+  }
+
+  nrpe::command { 'check_load':
+    command => "${nagios_plugin_path}/check_load -w ${warn01min},${warn05min},${warn15min} -c ${crit01min},${crit05min},${crit15min}"
+  }
 }
