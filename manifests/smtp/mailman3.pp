@@ -13,7 +13,7 @@ class profile::smtp::mailman3 {
 
   validate_re($relayhost, '^\S+$',
               'Wrong value for $relayhost')
-  validate_re($mydestination, '^\S+(?:,\s*\S+)*$',
+  validate_re($mydestination, '^\S+(?:\s*\S+)*$',
               'Wrong value for $mydestination')
   validate_re($mynetworks, '^(?:\S+?(?:(?:,\s)|(?:\s))?)*$',
               'Wrong value for $mynetworks')
