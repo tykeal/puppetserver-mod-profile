@@ -1,5 +1,5 @@
 class profile::nagios::client {
-#  include ::nagios::client
+  include ::nagios::client
 
   # configure nrpe on clients
   include ::nrpe
