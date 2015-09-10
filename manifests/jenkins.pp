@@ -24,8 +24,8 @@ class profile::jenkins {
   @@nginx::resource::vhost { "nginx_jenkins-${::fqdn}":
     ensure                          => present,
     server_name                     => [[$jenkins_sitename,],],
-    access_log                      => "/var/log/nginx/jenkins-${sitename}_access.log",
-    error_log                       => "/var/log/nginx/jenkins-${sitename}_error.log",
+    access_log                      => "/var/log/nginx/jenkins-${jenkins_sitename}_access.log",
+    error_log                       => "/var/log/nginx/jenkins-${jenkins_sitename}_error.log",
     autoindex                       => 'off',
     proxy                           => "http://${::fqdn}:${jenkins_port}",
     tag                             => $nginx_export,
