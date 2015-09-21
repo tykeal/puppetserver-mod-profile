@@ -47,7 +47,7 @@ class profile::rabbitmq {
     seluser  => 'system_u',
     selrole  => 'object_r',
     mode     => '0600',
-    source   => "file://${::settings::privatedir}/${::fqdn}.pem"
+    source   => "file://${::settings::privatekeydir}/${::fqdn}.pem"
   }
 
   file { 'rabitmqadmin':
