@@ -25,7 +25,7 @@ class profile::rabbitmq {
     seluser  => 'system_u',
     selrole  => 'object_r',
     mode     => '0600',
-    source   => "file://${::settings::cacert}"
+    source   => "file://${::settings::localcacert}"
   }
 
   file { "/etc/rabbitmq/ssl/${::fqdn}.crt":
