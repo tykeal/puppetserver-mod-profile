@@ -44,7 +44,6 @@ define profile::jenkins::run_groovy (
   }
 
   $groovy_loc  = $::profile::jenkins::groovy_loc
-  $jenkins_cli = $::jenkins::cli::cmd
 
   # set our SSH identity if we need auth
   if ($use_auth) {
@@ -54,10 +53,24 @@ define profile::jenkins::run_groovy (
     $auth_cmd = ''
   }
 
+  # jenkins::cli::cmd is no longer accessible. Mimic its use but with our
+  # own groovy script.
+  $helper_cmd = join(
+    delete_undef_values([
+      '/usr/bin/java',
+      "-jar ${jenkins::libdir}/jenkins-cli.jar",
+      "-s http://127.0.0.1:${jenkins::port}",
+      "${auth_cmd}",
+      "groovy ${groovy_loc}/${groovy_script}.groovy",
+      "${script_args}",
+    ]),
+    ' '
+  )
+
   # execute the script
   exec { "jenkins groovy for ${title}":
     path      => ['/usr/bin', '/usr/sbin', '/bin'],
-    command   => "${jenkins_cli} ${auth_cmd} groovy ${groovy_loc}/${groovy_script}.groovy ${script_args}",
+    command   => $helper_cmd,
     logoutput => false,
   }
 }

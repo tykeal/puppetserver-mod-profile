@@ -21,7 +21,7 @@ class profile::jenkins {
   $ssl_cert_chain = hiera('nginx::ssl_cert_chain')
 
   # Export the Jenkins vhost
-  @@nginx::resource::vhost { "nginx_jenkins-${::fqdn}":
+  @@nginx::resource::vhost { "nginx_jenkins-${jenkins_sitename}":
     ensure                          => present,
     server_name                     => [[$jenkins_sitename,],],
     access_log                      => "/var/log/nginx/jenkins-${jenkins_sitename}_access.log",
