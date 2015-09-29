@@ -1,0 +1,21 @@
+#!/bin/bash
+export LC_ALL=C
+TIMESTORE="/var/lib/avc-audit-report.last-run"
+TMPFILE=`mktemp /tmp/avc-audit-report.XXXXXXXXXX`
+
+if [ -e "$TIMESTORE" ]; then
+  LASTRUN=`cat ${TIMESTORE}`
+else
+  LASTRUN="yesterday"
+fi
+
+NOW="`date +'%D %T'`"
+
+/sbin/ausearch --input-logs -ts $LASTRUN --raw | audit2allow > $TMPFILE
+
+if [ ! -z "`grep -v '^$' ${TMPFILE}`" ]; then
+  cat $TMPFILE | mail -s "$HOSTNAME avc report (`/usr/sbin/getenforce`)" <%= @recipients %>
+fi
+
+echo -n "$NOW" > $TIMESTORE
+rm -f $TMPFILE
