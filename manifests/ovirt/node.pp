@@ -2,6 +2,16 @@ class profile::ovirt::node {
 
   $ovirt = hiera('ovirt', undef)
 
+  sudo::conf { 'vdsm':
+    priority => 50,
+    source   => "puppet:///modules/${module_name}/ovirt/vdsm",
+  }
+
+  sudo::conf { 'ovirt-ha':
+    priority => 60,
+    source   => "puppet:///modules/${module_name}/ovirt/ovirt-ha",
+  }
+
   firewall { '101 ovirt physdev-is-bridged':
     ensure              => 'present',
     action              => 'accept',
