@@ -1,5 +1,5 @@
 #!/bin/bash
-export LC_ALL=C
+export LC_ALL=en_US.UTF-8
 TIMESTORE="/var/lib/avc-audit-report.last-run"
 TMPFILE=`mktemp /tmp/avc-audit-report.XXXXXXXXXX`
 
@@ -9,7 +9,7 @@ else
   LASTRUN="yesterday"
 fi
 
-NOW="`date +'%D %T'`"
+NOW="`date +'%m/%d/%Y %T'`"
 
 /sbin/ausearch --input-logs -ts $LASTRUN --raw | audit2allow > $TMPFILE
 
