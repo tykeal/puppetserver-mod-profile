@@ -11,7 +11,7 @@ fi
 
 NOW="`date +'%m/%d/%Y %T'`"
 
-/sbin/ausearch --input-logs -ts $LASTRUN --raw | audit2allow > $TMPFILE
+/sbin/ausearch --input-logs -ts $LASTRUN --raw | audit2allow 2> /dev/null > $TMPFILE
 
 if [ ! -z "`grep -v '^$' ${TMPFILE}`" ]; then
   cat $TMPFILE | mail -s "$HOSTNAME avc report (`/usr/sbin/getenforce`)" <%= @recipients %>
