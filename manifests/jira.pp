@@ -36,7 +36,7 @@ class profile::jira {
 
   firewall { '050 accept jira traffic':
     proto  => 'tcp',
-    port   => $jira_tomcatPort,
+    dport  => $jira_tomcatPort,
     state  => ['NEW'],
     action => accept,
   }
@@ -50,7 +50,7 @@ class profile::jira {
 
     firewall { '050 accept jira HTTPS traffic':
       proto  => 'tcp',
-      port   => $jira_tomcatHttpsPort,
+      dport  => $jira_tomcatHttpsPort,
       state  => ['NEW'],
       action => accept,
     }

@@ -5,7 +5,7 @@ class profile::apache {
   # we listen on, we'll just automatically open 80 & 443
   firewall { '030 accept incoming HTTP and HTTPS traffic':
     proto  => 'tcp',
-    port   => ['80', '443'],
+    dport  => ['80', '443'],
     state  => ['NEW'],
     action => accept,
   }

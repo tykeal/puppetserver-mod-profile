@@ -12,7 +12,7 @@ class profile::bacula::client {
 
   firewall { '061 accept incoming bacula client traffic':
     proto  => 'tcp',
-    port   => $port,
+    dport  => $port,
     state  => ['NEW'],
     action => accept,
   }

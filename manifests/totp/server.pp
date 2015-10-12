@@ -7,7 +7,7 @@ class profile::totp::server {
 
   firewall { '060 accept totp connections':
     proto  => 'tcp',
-    port   => $port,
+    dport  => $port,
     state  => ['NEW'],
     action => 'accept'
   }

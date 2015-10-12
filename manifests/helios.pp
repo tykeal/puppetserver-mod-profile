@@ -68,7 +68,7 @@ class profile::helios {
 
   firewall { '030 accept incoming uwsgi traffic':
     proto  => 'tcp',
-    port   => $port,
+    dport  => $port,
     state  => ['NEW'],
     action => accept,
   }

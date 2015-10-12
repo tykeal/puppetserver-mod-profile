@@ -17,7 +17,7 @@ class profile::mailman3 {
 
   firewall { '030 accept incoming uwsgi traffic':
     proto  => 'tcp',
-    port   => $port,
+    dport  => $port,
     state  => ['NEW'],
     source => $allowed_hosts,
     action => accept,

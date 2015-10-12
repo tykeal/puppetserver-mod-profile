@@ -3,7 +3,7 @@ class profile::puppetdb::postgresql {
 
   firewall { '010 accept postgresql traffic':
     proto  => 'tcp',
-    port   => '5432',
+    dport  => '5432',
     state  => ['NEW'],
     action => accept,
   }

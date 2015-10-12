@@ -18,7 +18,7 @@ class profile::nagios::client {
       proto  => 'tcp',
       state  => ['NEW'],
       action => 'accept',
-      port   => $nrpe_port,
+      dport  => $nrpe_port,
       source => $host,
     }
   }

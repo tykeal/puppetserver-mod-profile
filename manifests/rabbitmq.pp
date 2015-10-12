@@ -12,7 +12,7 @@ class profile::rabbitmq {
 
   firewall { '050 accept incoming rabbitmq/stomp/mco ssl traffic':
     proto  => 'tcp',
-    port   => $ssl_port,
+    dport  => $ssl_port,
     state  => ['NEW'],
     action => accept,
   }

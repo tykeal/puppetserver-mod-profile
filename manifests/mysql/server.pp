@@ -13,7 +13,7 @@ class profile::mysql::server {
   # will just open a port
   firewall { '050 accept mysql connections':
     proto  => 'tcp',
-    port   => '3306',
+    dport  => '3306',
     state  => ['NEW'],
     action => 'accept'
   }

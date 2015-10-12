@@ -42,7 +42,7 @@ class profile::bacula::director {
 
   firewall { '060 accept bacula connections':
     proto  => 'tcp',
-    port   => $port,
+    dport  => $port,
     state  => ['NEW'],
     action => 'accept'
   }

@@ -6,7 +6,7 @@ class profile::bacula::storage {
 
   firewall { '060 accept bacula storage connections':
     proto  => 'tcp',
-    port   => $port,
+    dport  => $port,
     state  => ['NEW'],
     action => 'accept'
   }

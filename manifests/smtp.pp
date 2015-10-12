@@ -37,7 +37,7 @@ class profile::smtp {
     # operating on that port there is likely an issue
     firewall { '025 accept all SMTP traffic':
       proto  => 'tcp',
-      port   => ['25'],
+      dport  => ['25'],
       state  => ['NEW'],
       action => accept,
     }

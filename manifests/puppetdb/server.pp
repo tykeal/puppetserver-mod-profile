@@ -3,7 +3,7 @@ class profile::puppetdb::server {
 
   firewall { '010 accept puppetdb traffic':
     proto  => 'tcp',
-    port   => '8081',
+    dport  => '8081',
     state  => ['NEW'],
     action => accept,
   }

@@ -8,7 +8,7 @@ class profile::ssh::server {
   # make sure we accept SSH traffic through the firewall
   firewall { '005 accept all SSH traffic':
     proto  => 'tcp',
-    port   => $ssh_server_options['Port'],
+    dport  => $ssh_server_options['Port'],
     state  => ['NEW'],
     action => accept,
   }

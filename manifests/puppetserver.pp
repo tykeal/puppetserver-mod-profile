@@ -11,7 +11,7 @@ class profile::puppetserver {
   # allow access to puppet server port 8140
   firewall { '010 accept puppet master traffic':
     proto  => 'tcp',
-    port   => '8140',
+    dport  => '8140',
     state  => ['NEW'],
     action => accept,
   }
