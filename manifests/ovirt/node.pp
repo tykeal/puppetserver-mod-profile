@@ -1,3 +1,4 @@
+# Ovirt node profile
 class profile::ovirt::node {
 
   $ovirt = hiera('ovirt', undef)
@@ -19,11 +20,11 @@ class profile::ovirt::node {
   }
 
   firewall { '101 ovirt physdev-is-bridged':
-    ensure              => 'present',
-    action              => 'accept',
-    chain               => 'FORWARD',
-    physdev_is_bridged  => 'true',
-    proto               => 'all',
+    ensure             => 'present',
+    action             => 'accept',
+    chain              => 'FORWARD',
+    physdev_is_bridged => true,
+    proto              => 'all',
   }
 
   firewall { '101 allow vdsm connections':
@@ -31,7 +32,7 @@ class profile::ovirt::node {
     action => 'accept',
     chain  => 'INPUT',
     proto  => 'tcp',
-    source => $ovirt['engine_ip'],
+    source => $ovirt['allowed_nodes'],
     dport  => '54321',
   }
 
