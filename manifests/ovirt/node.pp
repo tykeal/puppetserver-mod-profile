@@ -2,6 +2,12 @@ class profile::ovirt::node {
 
   $ovirt = hiera('ovirt', undef)
 
+  package { 'ovirt-release35':
+    ensure   => installed,
+    source   => 'http://resources.ovirt.org/pub/yum-repo/ovirt-release35.rpm',
+    provider => rpm,
+  }
+
   sudo::conf { 'vdsm':
     priority => 50,
     source   => "puppet:///modules/${module_name}/ovirt/vdsm",
@@ -52,7 +58,7 @@ class profile::ovirt::node {
     action => 'accept',
     chain  => 'INPUT',
     proto  => 'tcp',
-    source => $ovirt['engine_ip'],
+    source => $ovirt['allowed_guests'],
     dport  => '5900-6923',
   }
 
