@@ -23,6 +23,7 @@ class profile::base {
   include ::profile::timezone
   include ::profile::vim
   include ::profile::shellenv
+  include ::profile::yum::versionlock
 
   # load profiles needed for lfcore
   if hiera('lfcorehost', false) {
