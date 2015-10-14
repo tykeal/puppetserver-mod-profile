@@ -1,4 +1,4 @@
-class yum::versionlock {
+class profile::yum::versionlock {
 
   $vlocks = hiera_hash('versionlock', undef)
 
@@ -8,7 +8,7 @@ class yum::versionlock {
 
   if ($vlocks) {
     validate_hash($vlocks)
-    create_resources(yum::versionlock::modify, $vlocks)
+    create_resources('::profile::yum::versionlock::modify', $vlocks)
   }
 
 }

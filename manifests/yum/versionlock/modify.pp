@@ -1,4 +1,4 @@
-define yum::versionlock::modify (
+define profile::yum::versionlock::modify (
   $ensure = present,
   $path   = '/etc/yum/pluginconf.d/versionlock.list'
 ) {
