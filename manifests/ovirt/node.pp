@@ -50,7 +50,7 @@ class profile::ovirt::node {
     action => 'accept',
     chain  => 'INPUT',
     proto  => 'tcp',
-    source => $ovirt['engine_ip'],
+    source => $ovirt['allowed_nodes'],
     dport  => '16514',
   }
 
