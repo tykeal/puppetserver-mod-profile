@@ -1,3 +1,4 @@
+# profile::puppet::agent
 class profile::puppet::agent {
   # we always enforce our puppet server instead of allowing the server
   # to just auto-discover off of the 'puppet' DNS lookup
@@ -33,6 +34,13 @@ class profile::puppet::agent {
         value   => $conf_value,
       }
     }
+  }
+
+  # /opt/puppetlabs/puppet/cache needs 0711 so that nrpe
+  # can traverse it to read the state file we monitor
+  file { '/opt/puppetlabs/puppet/cache':
+    ensure => directory,
+    mode   => '0711'
   }
 
   # Always make sure puppet agent is running
