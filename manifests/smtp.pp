@@ -5,6 +5,18 @@ class profile::smtp {
   # primary postfix configuration
   include ::postfix
 
+  # Force transport maps to be properly built even if we aren't pushing any
+  Postfix::Transport {
+    require => Exec['force transport rebuild']
+  }
+
+  exec { 'force transport rebuild':
+    path    => '/usr/bin:/usr/sbin:/bin',
+    command => 'rm -f /etc/postfix/transport{,.db}',
+    unless  => 'rpm -V postfix | grep -q transport',
+    require => Class['::postfix::packages'],
+  }
+
   # load any extra configurations that need to happen
   $postfix_configs = hiera_hash('postfix::configs', undef)
   if is_hash($postfix_configs) {
