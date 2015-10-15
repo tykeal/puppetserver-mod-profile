@@ -1,6 +1,7 @@
 # This is the base profile. This should be included by all roles that we
 # have in use
 class profile::base {
+  include ::profile::admin
   include ::profile::auditd
   include ::profile::bacula::client
   include ::profile::external_facts
