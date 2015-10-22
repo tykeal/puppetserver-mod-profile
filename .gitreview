@@ -1,4 +1,0 @@
-[gerrit]
-host=gerrit.linuxfoundation.org
-port=29418
-project=puppet/modules/profile
