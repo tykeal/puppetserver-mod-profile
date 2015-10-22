@@ -3,7 +3,6 @@
 class profile::base {
   include ::profile::admin
   include ::profile::auditd
-  include ::profile::bacula::client
   include ::profile::external_facts
   include ::profile::firewall
   include ::profile::hardware
@@ -26,19 +25,11 @@ class profile::base {
   include ::profile::shellenv
   include ::profile::yum::versionlock
 
-  # load profiles needed for lfcore
-  if hiera('lfcorehost', false) {
-    include ::profile::users::common
-    include ::profile::users::root
-  } else {
+  include ::profile::users::common
+
+  if hiera('enable_totp', false) {
     include ::profile::totp::client
   }
-
-  # load profile for GCE
-  if hiera('gcehost', false) {
-    include ::profile::gce
-  }
-
 
   # hiera driven custom profile / class loads
   $custom_profiles = hiera_array('custom_profiles', undef)

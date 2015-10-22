@@ -1,5 +1,0 @@
-Cmnd_Alias OVIRT_HA = \
-    /sbin/service vdsmd *, \
-    /sbin/service sanlock *
-
-vdsm  ALL=(ALL) NOPASSWD: OVIRT_HA
