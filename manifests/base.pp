@@ -7,7 +7,8 @@ class profile::base {
   include ::profile::firewall
   include ::profile::hardware
   include ::profile::nagios::client
-  include ::profile::ntp
+  # do not config ntp temporarily
+#  include ::profile::ntp
   include ::profile::pam
   include ::profile::puppetlabsrepo
   include ::profile::puppet::agent
@@ -16,7 +17,8 @@ class profile::base {
   include ::profile::rsyslog::client
   include ::profile::screen
   include ::profile::selinux
-  include ::profile::smtp
+  # do not config smtp temporarily
+#  include ::profile::smtp
   include ::profile::ssh::server
   include ::profile::sudo
   include ::profile::sysctl
