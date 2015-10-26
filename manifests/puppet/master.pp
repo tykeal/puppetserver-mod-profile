@@ -29,4 +29,22 @@ class profile::puppet::master {
     group   => 'puppet',
     content => template("${module_name}/opsgenie/opsgenie.yaml.erb"),
   }
+
+  # Assuming that reports are being stored locally on disk (along with
+  # probably puppetdb, let's do regular tidy operations on the reports
+  # we'll default to 1 week unless it's overridden in hiera
+  # If reports should not be auto-cleaned then the hiera value should be
+  # set to 'manual'
+  $puppet_report_ttl = hiera('puppet::master::report_ttl', '1w')
+
+  if ($puppet_report_ttl != 'manual')
+  {
+    tidy { 'tidy puppet reports':
+      path    => '/opt/puppetlabs/server/data/puppetserver/reports',
+      age     => $puppet_report_ttl,
+      recurse => true,
+      matches => [ '*.yaml' ],
+      rmdirs  => true,
+    }
+  }
 }
