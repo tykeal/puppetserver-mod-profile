@@ -1,0 +1,14 @@
+# THIS FILE IS MANAGED BY PUPPET!
+# DO NOT EDIT MANUALLY!
+
+[transport]
+<% @tagmailconf['transport'].sort.map do |var, val| -%>
+<%= var %> = <%= val %>
+<% end -%>
+
+[tagmap]
+<% @tagmailconf['tagmap'].each do |arr_val| -%>
+<% arr_val.map do |var, val| -%>
+<%= var %>: <%= val %>
+<% end -%>
+<% end -%>
