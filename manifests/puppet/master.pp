@@ -18,15 +18,57 @@ class profile::puppet::master {
     }
   }
 
-  # push opsgenie configuration
-  $opsgenie = hiera('opsgenie')
-  validate_hash($opsgenie)
+  # push report configurations
+  if (has_key($puppetmaster, 'reports')) {
 
-  file { "${::settings::confdir}/opsgenie.yaml":
-    ensure  => file,
-    mode    => '0640',
-    owner   => 'puppet',
-    group   => 'puppet',
-    content => template("${module_name}/opsgenie/opsgenie.yaml.erb"),
+    # push opsgenie configuration, but only if it's setup as a report
+    if ($puppetmaster['reports'].match(/opsgenie/)) {
+      $opsgenie = hiera('opsgenie')
+      validate_hash($opsgenie)
+
+      file { "${::settings::confdir}/opsgenie.yaml":
+        ensure  => file,
+        mode    => '0640',
+        owner   => 'puppet',
+        group   => 'puppet',
+        content => template("${module_name}/opsgenie/opsgenie.yaml.erb"),
+      }
+    }
+
+    # push tagmail configuration, but only if it's setup as a report
+    if ($puppetmaster['reports'].match(/tagmail/)) {
+      # tagmail is being configured, our config will be at tagmail::conf
+      # this will be written out as an ini file
+      $tagmailconf = hiera('tagmail::conf')
+      validate_hash($tagmailconf)
+
+      # tagmail::conf must have two sections transport (a hash) and
+      # tagmap (an array of hashes)
+      validate_hash($tagmailconf['transport'])
+      validate_array($tagmailconf['tagmap'])
+
+      file { "${::settings::confdir}/tagmail.conf":
+        ensure  => file,
+        content => template("${module_name}/tagmail/tagmail.conf.erb"),
+      }
+    }
+  }
+
+  # Assuming that reports are being stored locally on disk (along with
+  # probably puppetdb, let's do regular tidy operations on the reports
+  # we'll default to 1 week unless it's overridden in hiera
+  # If reports should not be auto-cleaned then the hiera value should be
+  # set to 'manual'
+  $puppet_report_ttl = hiera('puppet::master::report_ttl', '1w')
+
+  if ($puppet_report_ttl != 'manual')
+  {
+    tidy { 'tidy puppet reports':
+      path    => '/opt/puppetlabs/server/data/puppetserver/reports',
+      age     => $puppet_report_ttl,
+      recurse => true,
+      matches => [ '*.yaml' ],
+      rmdirs  => true,
+    }
   }
 }
