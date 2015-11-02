@@ -1,0 +1,9 @@
+#!/bin/sh
+
+# Toggles on a custom flag_puppet_tidy boolean fact
+
+FACTSDIR=/etc/puppetlabs/facter/facts.d
+
+echo 'flag_puppet_tidy=true' > ${FACTSDIR}/flag_puppet_tidy.txt
+
+# vim: ts=4 sw=4 sts=4 et ft=sh :

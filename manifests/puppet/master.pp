@@ -52,6 +52,48 @@ class profile::puppet::master {
         content => template("${module_name}/tagmail/tagmail.conf.erb"),
       }
     }
+
+    # local report storage causes build up of reports on disk we want a
+    # way to clean these up sanely
+    if ($puppetmaster['reports'].match(/store/)) {
+      # step 1 determine if report cleaning is going to be manual or not
+      $puppet_report_ttl = hiera('puppet::master::report_ttl', '1w')
+
+      if ($puppet_report_ttl != 'manual')
+      {
+        # cleaning is not manual
+
+        # step 2 create a cron job that fires once a day to set a custom
+        # fact
+        file { '/etc/cron.daily/flag_puppet_tidy':
+          ensure => file,
+          owner  => 'root',
+          group  => 'root',
+          mode   => '0744',
+          source => "puppet:///modules/${module_name}/flag_puppet_tidy",
+        }
+
+        # Now that the fact is set to fire once per day, if it's true
+        # we'll execute the tidy operation, but only once a day.
+        if ($::flag_puppet_tidy) {
+          tidy { 'tidy puppet reports':
+            path    => '/opt/puppetlabs/server/data/puppetserver/reports',
+            age     => $puppet_report_ttl,
+            recurse => true,
+            matches => [ '*.yaml' ],
+            rmdirs  => true,
+          }
+        }
+      }
+    } else {
+      # No stored reports, as such we want to make sure the daily cron
+      # job to flag the tidy operation doesn't exist, otherwise we're
+      # going to get regular removal notices from the external_facts
+      # since this is not a puppet managed external_fact (on purpose)
+      file { '/etc/cron.daily/flag_puppet_tidy':
+        ensure => absent,
+      }
+    }
   }
 
   # Assuming that reports are being stored locally on disk (along with
@@ -61,14 +103,4 @@ class profile::puppet::master {
   # set to 'manual'
   $puppet_report_ttl = hiera('puppet::master::report_ttl', '1w')
 
-  if ($puppet_report_ttl != 'manual')
-  {
-    tidy { 'tidy puppet reports':
-      path    => '/opt/puppetlabs/server/data/puppetserver/reports',
-      age     => $puppet_report_ttl,
-      recurse => true,
-      matches => [ '*.yaml' ],
-      rmdirs  => true,
-    }
-  }
 }
