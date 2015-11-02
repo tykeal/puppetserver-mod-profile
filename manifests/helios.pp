@@ -65,6 +65,14 @@ class profile::helios {
       Package[$db_engine_pkgs],
     ],
   }
+  cron {'helios_voter_file_process':
+    # lint:ignore:80chars
+    command => "${base_dir}/virtualenv/bin/python ${base_dir}/helios/manage.py celery call voter_file_process > /dev/null",
+    # lint:endignore
+    user    => $user,
+    minute  => '*/10',
+    require => Python::Virtualenv["${base_dir}/virtualenv"],
+  }
 
   firewall { '030 accept incoming uwsgi traffic':
     proto  => 'tcp',
