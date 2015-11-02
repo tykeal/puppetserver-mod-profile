@@ -70,7 +70,7 @@ class profile::puppet::master {
           owner  => 'root',
           group  => 'root',
           mode   => '0744',
-          source => "puppet:///modules/${module_name}/flag_puppet_tidy",
+          source => "puppet:///modules/${module_name}/puppet/flag_puppet_tidy",
         }
 
         # Now that the fact is set to fire once per day, if it's true
