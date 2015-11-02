@@ -49,6 +49,7 @@ class profile::clm {
       ssl_dhparam      => "/etc/pki/tls/certs/${ssl_dhparam}.pem",
       autoindex        => 'off',
       proxy            => "http://${::fqdn}:${clm_port}",
+      tag              => $nginx_exporttag,
     }
   }
 
