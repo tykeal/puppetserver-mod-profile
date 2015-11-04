@@ -52,23 +52,47 @@ class profile::puppet::master {
         content => template("${module_name}/tagmail/tagmail.conf.erb"),
       }
     }
-  }
 
-  # Assuming that reports are being stored locally on disk (along with
-  # probably puppetdb, let's do regular tidy operations on the reports
-  # we'll default to 1 week unless it's overridden in hiera
-  # If reports should not be auto-cleaned then the hiera value should be
-  # set to 'manual'
-  $puppet_report_ttl = hiera('puppet::master::report_ttl', '1w')
+    # local report storage causes build up of reports on disk we want a
+    # way to clean these up sanely
+    if ($puppetmaster['reports'].match(/store/)) {
+      # step 1 determine if report cleaning is going to be manual or not
+      $puppet_report_ttl = hiera('puppet::master::report_ttl', '1w')
 
-  if ($puppet_report_ttl != 'manual')
-  {
-    tidy { 'tidy puppet reports':
-      path    => '/opt/puppetlabs/server/data/puppetserver/reports',
-      age     => $puppet_report_ttl,
-      recurse => true,
-      matches => [ '*.yaml' ],
-      rmdirs  => true,
+      if ($puppet_report_ttl != 'manual')
+      {
+        # cleaning is not manual
+
+        # step 2 create a cron job that fires once a day to set a custom
+        # fact
+        file { '/etc/cron.daily/flag_puppet_tidy':
+          ensure => file,
+          owner  => 'root',
+          group  => 'root',
+          mode   => '0744',
+          source => "puppet:///modules/${module_name}/puppet/flag_puppet_tidy",
+        }
+
+        # Now that the fact is set to fire once per day, if it's true
+        # we'll execute the tidy operation, but only once a day.
+        if ($::flag_puppet_tidy) {
+          tidy { 'tidy puppet reports':
+            path    => '/opt/puppetlabs/server/data/puppetserver/reports',
+            age     => $puppet_report_ttl,
+            recurse => true,
+            matches => [ '*.yaml' ],
+            rmdirs  => true,
+          }
+        }
+      }
+    } else {
+      # No stored reports, as such we want to make sure the daily cron
+      # job to flag the tidy operation doesn't exist, otherwise we're
+      # going to get regular removal notices from the external_facts
+      # since this is not a puppet managed external_fact (on purpose)
+      file { '/etc/cron.daily/flag_puppet_tidy':
+        ensure => absent,
+      }
     }
   }
 }

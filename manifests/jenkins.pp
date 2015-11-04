@@ -20,6 +20,24 @@ class profile::jenkins {
   $ssl_cert_name = hiera('nginx::ssl_cert_name')
   $ssl_cert_chain = hiera('nginx::ssl_cert_chain')
 
+  $jenkins_config = hiera('jenkins::config_hash')
+  validate_hash($jenkins_config)
+
+  if (has_key($jenkins_config, 'PREFIX') and has_key($jenkins_config['PREFIX'], 'value')) {
+    $jenkins_prefix = $jenkins_config['PREFIX']['value']
+    validate_string($jenkins_prefix)
+
+    $vhost_cfg_prepend = {
+      'proxy_buffering' => 'off',
+      'rewrite' => "^/$ ${jenkins_prefix} permanent",
+    }
+  } else {
+    $jenkins_prefix = false
+    $vhost_cfg_prepend = {
+      'proxy_buffering' => 'off',
+    }
+  }
+
   # Export the Jenkins vhost
   @@nginx::resource::vhost { "nginx_jenkins-${jenkins_sitename}":
     ensure                          => present,
@@ -30,23 +48,42 @@ class profile::jenkins {
     proxy                           => "http://${::fqdn}:${jenkins_port}",
     tag                             => $nginx_export,
     ssl                             => true,
+    rewrite_to_https                => true,
     ssl_cert                        => "/etc/pki/tls/certs/${ssl_cert_name}-${ssl_cert_chain}.pem",
     ssl_key                         => "/etc/pki/tls/private/${ssl_cert_name}.pem",
-    rewrite_to_https                => true,
+    vhost_cfg_prepend               => $vhost_cfg_prepend,
+    proxy_set_header => [
+        'Host $host',
+        'X-Real-IP $remote_addr',
+        'X-Forwarded-For $proxy_add_x_forwarded_for',
+        'X-Forwarded-Proto $scheme',
+        'X-Forwarded-Port $server_port',
+        'Accept-Encoding ""',
+      ],
     add_header                      => {
         'Strict-Transport-Security' => 'max-age=1209600',
       },
-    proxy_set_header                => [
-      'Host $host',
-      'X-Real-IP $remote_addr',
-      'X-Forwarded-For $proxy_add_x_forwarded_for',
-      'X-Forwarded-Proto $scheme',
-      'X-Forwarded-Port $server_port',
-      'Accept-Encoding ""',
-      ],
-    vhost_cfg_prepend               => {
-       'proxy_buffering' => 'off',
-      },
+  }
+
+  if ($jenkins_prefix) {
+    @@nginx::resource::location { "nginx_jenkins-${jenkins_sitename}-prefix":
+      ensure                          => present,
+      ssl                             => true,
+      ssl_only                        => true,
+      vhost                           => "nginx_jenkins-${jenkins_sitename}",
+      location                        => $jenkins_prefix,
+      autoindex                       => 'off',
+      proxy                           => "http://${::fqdn}:${jenkins_port}",
+      tag                             => $nginx_export,
+      proxy_set_header => [
+          'Host $host',
+          'X-Real-IP $remote_addr',
+          'X-Forwarded-For $proxy_add_x_forwarded_for',
+          'X-Forwarded-Proto $scheme',
+          'X-Forwarded-Port $server_port',
+          'Accept-Encoding ""',
+        ],
+    }
   }
 
   $groovy_loc = '/etc/jenkins'

@@ -45,10 +45,11 @@ class profile::clm {
       # lint:ignore:80chars
       ssl_cert         => "/etc/pki/tls/certs/${ssl_cert_name}-${ssl_cert_chain}.pem",
       # lint:endignore
-      ssl_key          => "/etc/pki/tls/certs/${ssl_cert_name}.pem",
+      ssl_key          => "/etc/pki/tls/private/${ssl_cert_name}.pem",
       ssl_dhparam      => "/etc/pki/tls/certs/${ssl_dhparam}.pem",
       autoindex        => 'off',
       proxy            => "http://${::fqdn}:${clm_port}",
+      tag              => $nginx_exporttag,
     }
   }
 
