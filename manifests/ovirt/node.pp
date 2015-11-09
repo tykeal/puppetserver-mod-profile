@@ -19,6 +19,11 @@ class profile::ovirt::node {
     source   => "puppet:///modules/${module_name}/ovirt/ovirt-ha",
   }
 
+  file_line {'peerdns_fix':
+    line => 'PEERDNS=no',
+    path => '/etc/sysconfig/network-scripts/ifcfg-ovirtmgmt',
+  }
+
   firewall { '101 ovirt physdev-is-bridged':
     ensure             => 'present',
     action             => 'accept',
