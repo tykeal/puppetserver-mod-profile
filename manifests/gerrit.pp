@@ -1,4 +1,6 @@
 class profile::gerrit {
+  include ::profile::java
+
   include ::gerrit
 
   # grab the gerrit configuration so we know what to do for nginx
