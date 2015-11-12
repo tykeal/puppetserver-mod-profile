@@ -2,7 +2,7 @@ class profile::nexus {
   include ::profile::java
   include ::nexus
 
-  $nexusport = hiera('nexus::nexus_port', '8081')
+  $nexus_port = hiera('nexus::nexus_port', '8081')
   validate_integer($nexusport)
 
   firewall { '050 accept nexus traffic':
