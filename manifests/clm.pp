@@ -1,5 +1,5 @@
 class profile::clm {
-  include ::java
+  include ::profile::java
   include ::clm
 
   $clm_config = hiera('clm::clm_config', undef)
