@@ -45,4 +45,19 @@ class profile::base {
   if ($custom_profiles) {
     hiera_include('custom_profiles')
   }
+
+  # clean-up ::1 hosts entry unless we need ipv6
+  # this is a temporary measure until we verify if adding
+  # ghoneycutt/hosts will break totp::client since it pushes a forced
+  # hosts entry. It might be apropo to make that module just depend on
+  # ghoneycutt/hosts....
+  $enable_ipv6 = hiera('enable_ipv6', false)
+  unless ($enable_ipv6) {
+    file_line { 'remove localhost6 from hosts':
+      ensure => absent,
+      path   => '/etc/hosts',
+      line   => '::1 localhost', # required and matchable by match
+      match  => '^::1',
+    }
+  }
 }
