@@ -3,7 +3,7 @@ class profile::nexus {
   include ::nexus
 
   $nexus_port = hiera('nexus::nexus_port', 8081)
-  validate_integer($nexusport)
+  validate_integer($nexus_port)
 
   firewall { '050 accept nexus traffic':
     proto  => 'tcp',
