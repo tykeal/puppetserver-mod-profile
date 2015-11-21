@@ -1,6 +1,6 @@
 class profile::jira {
   # Jira requires java to be installed
-  include ::java
+  include ::profile::java
   include ::jira
 
   # Since we use MySQL in general in our environments we'll just assume

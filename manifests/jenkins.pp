@@ -1,4 +1,6 @@
 class profile::jenkins {
+  include ::profile::java
+
   include ::jenkins
 
   $jenkins_sitename = hiera('nginx::export::vhost')
