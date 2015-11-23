@@ -5,11 +5,12 @@ class profile::jenkins_job_builder {
   # given the current shortcomings of the module it's the best I can do
   # to make sure we can add extra config bits
   $extra_configs = hiera('jenkins_job_builder::extra_configs', undef)
-  if ($extra_configs) {
+  if ($extra_configs)
+  {
     validate_hash($extra_configs)
-
     $jjb_config_defaults = {
-      path => '/etc/jenkins_jobs/jenkins_jobs.ini',
+      path    => '/etc/jenkins_jobs/jenkins_jobs.ini',
+      require => Class['::jenkins_job_builder'],
     }
 
     create_ini_settings($extra_configs, $jjb_config_defaults)
