@@ -9,8 +9,7 @@ class profile::jenkins_job_builder {
   {
     validate_hash($extra_configs)
     $jjb_config_defaults = {
-      path    => '/etc/jenkins_jobs/jenkins_jobs.ini',
-      require => Class['::jenkins_job_builder'],
+      path => '/etc/jenkins_jobs/jenkins_jobs.ini',
     }
 
     create_ini_settings($extra_configs, $jjb_config_defaults)
