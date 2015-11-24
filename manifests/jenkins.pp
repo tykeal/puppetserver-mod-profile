@@ -156,10 +156,17 @@ class profile::jenkins {
     # basic security has not yet been setup, this should be a one time
     # thing
 
+    if ($jenkins_prefix) {
+      $url_prefix = $jenkins_prefix
+    } else {
+      $url_prefix = ''
+    }
+
     # ssh auth needs to be setup before security is executed
     profile::jenkins::run_groovy { 'set_jenkins_admin_ssh':
       use_auth    => false,
       script_args => "${jenkinsadmin} `cat ${groovy_loc}/.ssh/jenkins_admin.pub`",
+      url_prefix  => $url_prefix,
       require     =>  [
                         File["${groovy_loc}/set_jenkins_admin_ssh.groovy"],
                         Exec['Create jenkins_admin SSH key'],
@@ -167,11 +174,12 @@ class profile::jenkins {
     }
 
     profile::jenkins::run_groovy { "set_${jenkins_auth}_auth":
-      use_auth => false,
-      require  => [
-                    File["${groovy_loc}/set_${jenkins_auth}_auth.groovy"],
-                    Profile::Jenkins::Run_groovy['set_jenkins_admin_ssh'],
-                  ],
+      use_auth   => false,
+      url_prefix => $url_prefix,
+      require    => [
+                      File["${groovy_loc}/set_${jenkins_auth}_auth.groovy"],
+                      Profile::Jenkins::Run_groovy['set_jenkins_admin_ssh'],
+                    ],
     }
 
     # flag that we need auth from now on but only after our auth setting
