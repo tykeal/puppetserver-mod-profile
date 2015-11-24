@@ -3,6 +3,12 @@ class profile::jenkins {
 
   include ::jenkins
 
+  # Make sure that the jenkins service is managed via the redhat
+  # provider and not the detected systemd provider on EL7 systems
+  Service <| tag == 'jenkins::service' |> {
+    provider => 'redhat',
+  }
+
   $jenkins_sitename = hiera('nginx::export::vhost')
   validate_string($jenkins_sitename)
 
