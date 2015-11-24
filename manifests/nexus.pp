@@ -2,12 +2,17 @@ class profile::nexus {
   include ::profile::java
   include ::nexus
 
+  # Force nexus service to use old redhat service provider
+  Service <| tag == 'nexus::service' |> {
+    provider => 'redhat',
+  }
+
   $nexus_port = hiera('nexus::nexus_port', 8081)
   validate_integer($nexus_port)
 
   firewall { '050 accept nexus traffic':
     proto  => 'tcp',
-    dport  => $nexusport,
+    dport  => $nexus_port,
     state  => ['NEW'],
     action => accept,
   }
