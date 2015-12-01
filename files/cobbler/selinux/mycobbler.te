@@ -1,0 +1,13 @@
+module mycobbler 1.2;
+
+require {
+  type dhcp_etc_t;
+  type cobblerd_t;
+  class dir { write add_name };
+  class file { create write };
+}
+
+#============= cobblerd_t ==============
+# Allow cobbler writes to dhcp directory
+allow cobblerd_t dhcp_etc_t:dir { write add_name };
+allow cobblerd_t dhcp_etc_t:file { create write };
