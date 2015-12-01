@@ -29,7 +29,7 @@ class profile::smtp::userrelay {
   postfix::config {
     'mydestination':       value => $mydestination;
     'mynetworks':          value => $mynetworks;
-    'virtual_alias_maps':  value => 'hash:/etc/postfix/virtual';
+    'virtual_alias_maps':  value => 'hash:/etc/postfix/virtual, ldap:/etc/postfix/ldap-aliases';
   }
 
   postfix::hash { '/etc/postfix/virtual':
