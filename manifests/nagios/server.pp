@@ -40,7 +40,7 @@ class profile::nagios::server {
 
   # Opsgenie Scripts need some perl packages
   ensure_resource('package',
-    ['perl-libwww-perl','perl-JSON-XS'],
+    ['perl-libwww-perl','perl-JSON-XS','perl-LWP-Protocol-https'],
       {'ensure' => 'present'}
   )
 }
