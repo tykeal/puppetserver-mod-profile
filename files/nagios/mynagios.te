@@ -1,0 +1,14 @@
+module mynagios 1.1;
+
+require {
+  type nagios_t;
+  type nagios_tmp_t;
+  type nagios_services_plugin_t;
+  class file write;
+  class capability chown;
+}
+
+#============= nagios_services_plugin_t ==============
+allow nagios_services_plugin_t nagios_tmp_t:file write;
+#============= nagios_t ==============
+allow nagios_t self:capability chown;
