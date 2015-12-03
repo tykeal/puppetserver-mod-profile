@@ -5,7 +5,8 @@ class profile::smtp::userrelay {
   # setup the variables that ::postfix::mta would normally setup along
   # with the defaults that would usually happen
   $mydestination = hiera('postfix::mydestination', '$myorigin')
-  $mynetworks    = hiera('postfix::mynetworks', '127.0.0.0/8 [::ffff:127.0.0.0]/104 [::1]/128')
+  $mynetworks    = hiera('postfix::mynetworks',
+                          '127.0.0.0/8 [::ffff:127.0.0.0]/104 [::1]/128')
   # Special case to defaulting to direct, normally relayhost _must_ be
   # defined but there is a high probability that a mailman3 system will
   # be configured for direct delivery
@@ -29,10 +30,19 @@ class profile::smtp::userrelay {
   postfix::config {
     'mydestination':       value => $mydestination;
     'mynetworks':          value => $mynetworks;
+    # lint:ignore:80chars
     'virtual_alias_maps':  value => 'hash:/etc/postfix/virtual, ldap:/etc/postfix/ldap-aliases';
+    # lint:endignore
   }
 
   postfix::hash { '/etc/postfix/virtual':
     ensure => 'present',
+  }
+
+  # load virtual alias maps
+  $virtual_aliases = hiera_hash('postfix::virtual', undef)
+  if ($virtual_aliases) {
+    ensure_hash($virtual_aliases)
+    create_resources('postfix::virtual', $virtual_aliases)
   }
 }
