@@ -42,7 +42,7 @@ class profile::smtp::userrelay {
   # load virtual alias maps
   $virtual_aliases = hiera_hash('postfix::virtual', undef)
   if ($virtual_aliases) {
-    ensure_hash($virtual_aliases)
+    validate_hash($virtual_aliases)
     create_resources('postfix::virtual', $virtual_aliases)
   }
 }
