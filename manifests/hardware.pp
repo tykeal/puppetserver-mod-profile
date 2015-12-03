@@ -7,7 +7,7 @@ class profile::hardware {
 
   # get data needed for exported creating services
   $nagios_tag = hiera('nagios::client::nagiostag', '')
-  $defaultserviceconfig = hiera('nagios::client::defaultserviceconfig'
+  $defaultserviceconfig = hiera('nagios::client::defaultserviceconfig',
     $::nagios::params::defaultserviceconfig)
 
   if $::manufacturer =~ /(?i-mx:dell.*)/ {
