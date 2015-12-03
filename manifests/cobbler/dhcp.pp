@@ -8,9 +8,5 @@ class profile::cobbler::dhcp {
     package {'dhcp':
       ensure => 'installed',
     }
-    include selinux::base
-    selinux::module {'mycobbler':
-      source => 'puppet:///modules/profile/cobbler/selinux/mycobbler.te',
-    }
   }
 }

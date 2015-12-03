@@ -9,7 +9,12 @@ class profile::cobbler::selinux {
     value      => on,
   }
 
-  include selinux::base
+  include ::selinux::base
+
+  # Selinux module for cobbler
+  selinux::module {'mycobbler':
+    source => 'puppet:///modules/profile/cobbler/selinux/mycobbler.te',
+  }
   # Fcontext for tftpboot directory
   selinux::fcontext {'/var/lib/tftpboot/boot':
     ensure    => 'present',

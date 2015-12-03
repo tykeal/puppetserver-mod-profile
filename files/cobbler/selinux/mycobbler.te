@@ -1,13 +1,25 @@
-module mycobbler 1.2;
+module mycobbler 1.3;
 
 require {
-  type dhcp_etc_t;
   type cobblerd_t;
-  class dir { write add_name };
-  class file { create write };
+  type dhcp_etc_t;
+  type rpm_var_lib_t;
+  type rpm_var_cache_t;
+  type var_run_t;
+  type rpm_log_t;
+  class dir { open create read write add_name getattr search remove_name};
+  class file { open create read write getattr setattr lock unlink rename };
 }
 
 #============= cobblerd_t ==============
 # Allow cobbler writes to dhcp directory
 allow cobblerd_t dhcp_etc_t:dir { write add_name };
 allow cobblerd_t dhcp_etc_t:file { create write };
+# Allow cobbler read rpm database
+allow cobblerd_t rpm_var_lib_t:dir { getattr search };
+allow cobblerd_t rpm_var_lib_t:file { open read write getattr lock };
+allow cobblerd_t rpm_log_t:file open;
+allow cobblerd_t var_run_t:dir { write add_name remove_name };
+allow cobblerd_t var_run_t:file { open create read write getattr unlink };
+allow cobblerd_t rpm_var_cache_t:dir { open create read write add_name getattr search remove_name};
+allow cobblerd_t rpm_var_cache_t:file { open create read write getattr setattr lock unlink rename };
