@@ -2,6 +2,20 @@ class profile::nexus {
   include ::profile::java
   include ::nexus
 
+  # install nexus plugins if needed
+  $nexus_plugins = hiera('nexus::plugins', undef)
+
+  if $nexus_plugins {
+    validate_hash($nexus_plugins)
+    create_resources('profile::nexus::third_party_plugin',
+      $nexus_plugins)
+  }
+
+  # Nexus systems may, or may not host yum or apt repos
+  # Let's make sure they have the required components to do so
+  ensure_resource('package', ['createrepo', 'dpkg', 'dpkg-devel'],
+    { 'ensure' => 'installed' })
+
   # Force nexus service to use old redhat service provider
   Service <| tag == 'nexus::service' |> {
     provider => 'redhat',
