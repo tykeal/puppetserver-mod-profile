@@ -24,6 +24,11 @@
 #   the password file will be done before the groovy script is actually
 #   run. After the run a logout will be performed
 #
+# [*url_prefix*]
+#   Prefix URL Jenkins is accessible from. Default: empty string
+#   If Jenkins is hosted from a URL prefix (ex. '/jenkins'), the
+#   jenkins-cli must use the prefix when talking to the server.
+#
 # === Examples
 #
 # profile::jenkins::run_groovy { 'set_ldap_auth':
@@ -34,6 +39,7 @@ define profile::jenkins::run_groovy (
   $groovy_script = $title,
   $script_args   = '',
   $use_auth      = true,
+  $url_prefix    = '',
 ) {
   # We can't seem to do a relationship lock against ::jenkins so we'll
   # just do an include (this should _hopefully_ take care of our issues)
@@ -59,7 +65,7 @@ define profile::jenkins::run_groovy (
     delete_undef_values([
       '/usr/bin/java',
       "-jar ${jenkins::libdir}/jenkins-cli.jar",
-      "-s http://127.0.0.1:${jenkins::port}",
+      "-s http://127.0.0.1:${jenkins::port}${url_prefix}",
       "${auth_cmd}",
       "groovy ${groovy_loc}/${groovy_script}.groovy",
       "${script_args}",

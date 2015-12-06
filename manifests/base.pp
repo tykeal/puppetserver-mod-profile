@@ -49,8 +49,7 @@ class profile::base {
     file_line { 'remove localhost6 from hosts':
       ensure => absent,
       path   => '/etc/hosts',
-      line   => '::1 localhost', # required and matchable by match
-      match  => '^::1',
+      line   => '::1         localhost localhost.localdomain localhost6 localhost6.localdomain6',
     }
   }
 }
