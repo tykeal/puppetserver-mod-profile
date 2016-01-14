@@ -19,7 +19,7 @@ class profile::base {
   include ::profile::selinux
   # do not config smtp temporarily
 #  include ::profile::smtp
-  include ::profile::ssh::server
+  include ::profile::ssh
   include ::profile::sudo
   include ::profile::sysctl
   include ::profile::timezone
