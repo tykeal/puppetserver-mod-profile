@@ -13,9 +13,6 @@ class profile::mysql::server {
   $defaultserviceconfig = hiera('nagios::client::defaultserviceconfig',
     $::nagios::params::defaultserviceconfig)
 
-  # get password for nagios check
-  $pt_heartbeat_pass = hiera('mysql::pt_heartbeat_pass')
-
   # collect database definitions that have been exported by other
   # profiles
   Mysql::Db <<| tag == $resourcetag |>>
@@ -61,6 +58,9 @@ class profile::mysql::server {
   }
 
   if hiera('mysql::has_replication', false) {
+    # get password for nagios check
+    $pt_heartbeat_pass = hiera('mysql::pt_heartbeat_pass')
+
     nrpe::command {
       'check_mysql_slavestatus':
         command => "${nagios_plugin_dir}/check_mysql_slavestatus -H 127.0.0.1 -P 3306 -u pt-heartbeat -p ${pt_heartbeat_pass}"
