@@ -1,3 +1,4 @@
+# Rabbitmq profile
 class profile::rabbitmq {
   include ::rabbitmq
   include ::erlang
@@ -9,10 +10,21 @@ class profile::rabbitmq {
 
   $ssl_port=hiera('rabbitmq::ssl_stomp_port',61614)
   validate_integer($ssl_port)
-
+  
+  selinux::module {'myrabbitmq':
+    source => 'puppet:///modules/profile/rabbitmq/selinux/myrabbitmq.te',
+  }
+  
   firewall { '050 accept incoming rabbitmq/stomp/mco ssl traffic':
     proto  => 'tcp',
     dport  => $ssl_port,
+    state  => ['NEW'],
+    action => accept,
+  }
+
+  firewall { '050 accept incoming rabbitmq federation traffic':
+    proto  => 'tcp',
+    dport  => 5672,
     state  => ['NEW'],
     action => accept,
   }
@@ -77,8 +89,9 @@ class profile::rabbitmq {
     create_resources( rabbitmq_user, $rabbitmq_users )
   }
 
-  $rabbitmq_user_permissions = hiera_hash('rabbitmq::rabbitmq_user_permissions',
-                                undef)
+  #lint:ignore:80chars
+  $rabbitmq_user_permissions = hiera_hash('rabbitmq::rabbitmq_user_permissions', undef)
+  #lint:endignore
   if is_hash($rabbitmq_user_permissions) {
     create_resources( rabbitmq_user_permissions, $rabbitmq_user_permissions )
   }
@@ -86,5 +99,15 @@ class profile::rabbitmq {
   $rabbitmq_plugins = hiera_hash('rabbitmq::rabbitmq_plugin', undef)
   if is_hash($rabbitmq_plugins) {
     create_resources( rabbitmq_plugin, $rabbitmq_plugins )
+  }
+
+  $rabbitmq_parameters = hiera_hash('rabbitmq::rabbitmq_parameter', undef)
+  if is_hash($rabbitmq_parameters) {
+    create_resources( rabbitmq_parameter, $rabbitmq_parameters )
+  }
+
+  $rabbitmq_policys = hiera_hash('rabbitmq::rabbitmq_policy', undef)
+  if is_hash($rabbitmq_policys) {
+    create_resources( rabbitmq_policy, $rabbitmq_policys )
   }
 }
