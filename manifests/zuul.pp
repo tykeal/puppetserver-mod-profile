@@ -10,10 +10,14 @@ class profile::zuul {
     if has_key($zuul_override, 'gearman_server') {
       if has_key($zuul_override['gearman_server'], 'start') {
         $open_gearmanport = $zuul_override['gearman_server']['start']
+      } else {
+        $open_gearmanport = true
       }
     } else {
       $open_gearmanport = true
     }
+  } else {
+    $open_gearmanport = true
   }
 
   if $open_gearmanport {
