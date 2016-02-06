@@ -4,6 +4,6 @@
 # going to be used
 class profile::python::venv {
   # Venv's typically need to compile packages
-  ensure_packages('gcc', 'make')
+  ensure_packages(['gcc', 'make'])
   include ::python
 }
