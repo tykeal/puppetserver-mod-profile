@@ -1,5 +1,6 @@
 # Class: profile::zuul
 class profile::zuul {
+  include ::profile::python::venv
   include ::zuul
 
   $zuul_override = hiera('zuul::config_override', undef)
