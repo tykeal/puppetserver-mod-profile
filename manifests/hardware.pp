@@ -10,32 +10,50 @@ class profile::hardware {
   $defaultserviceconfig = hiera('nagios::client::defaultserviceconfig',
     $::nagios::params::defaultserviceconfig)
 
-  if $::manufacturer =~ /(?i-mx:dell.*)/ {
-    include ::dell
-    include ::dell::openmanage
-    include ::epel
-
-    package { 'nagios-plugins-openmanage':
-      ensure  => installed,
-      require => Yumrepo['epel'],
+  case $::manufacturer {
+    /(?i-mx:dell.*)/: {
+      include ::profile::hardware::dell
     }
+    'Silicon Mechanics': {
+      include ::profile::hardware::simech
+    }
+    default: {
+      # nothing to do
+    }
+  }
+
+  # If has_srv_partition is true, monitor its size
+  #lint:ignore:80chars
+  $has_srv_partition = hiera('nagios::has_srv_partition', false)
+  #lint:endignore
+  if ($has_srv_partition) {
+    validate_bool($has_srv_partition)
+    #lint:ignore:80chars
+    $srv_partition_warn = hiera('nagios::srv_partition_warn', 15)
+    #lint:endignore
+    validate_integer($srv_partition_warn)
+    #lint:ignore:80chars
+    $srv_partition_crit = hiera('nagios::srv_partition_crit', 5)
+    #lint:endignore
+    validate_integer($srv_partition_crit)
 
     nrpe::command {
-      'check_dell_openmanage':
-        # lint:ignore:80chars
-        command => "${nagios_plugin_dir}/check_openmanage -t 60 -b pdisk_cert=all/pdisk_foreign=all/bat_charge=all"
-        # lint:endignore
+      'check_disk_srv':
+      #lint:ignore:80chars
+      command => "${nagios_plugin_dir}/check_disk -M -w ${nagios::srv_partition_warn}% -c ${nagios::srv_partition_crit}% /srv"
+      #lint:endignore
     }
 
-    nagios::resource { "NRPE-DELL-OMSA-${::hostname}":
+    nagios::resource { "NRPE-Srv-Free-Disk-${::fqdn}":
       resource_type      => 'service',
       defaultresourcedef => $defaultserviceconfig,
       nagiostag          => $nagios_tag,
       resourcedef        => {
-        service_description => 'NRPE - Dell Hardware',
-        check_command       => 'check_nrpe!check_dell_openmanage',
+        service_description => 'NRPE - Srv Free Disk',
+        check_command       => 'check_nrpe!check_disk_srv',
       },
     }
   }
+
 
 }

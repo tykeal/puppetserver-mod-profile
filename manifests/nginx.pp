@@ -13,14 +13,14 @@ class profile::nginx {
 
   # we expect our nginx systems to be doing SSL if not
   # This only happens if nginx::sslcerts is a hash though
-  $sslcerts = hiera('nginx::sslcerts')
+  $sslcerts = hiera('nginx::sslcerts', undef)
   if (is_hash($sslcerts)) {
     # configure all the defined certs
     create_resources(sslmgmt::cert, $sslcerts)
   }
 
   # ca cert / dhparam files to push
-  $cacerts = hiera('nginx::cacerts')
+  $cacerts = hiera('nginx::cacerts', undef)
   if (is_hash($cacerts)) {
     # push all the ca certs / dhparam files
     create_resources(sslmgmt::ca_dh, $cacerts)

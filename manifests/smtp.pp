@@ -33,6 +33,22 @@ class profile::smtp {
     create_resources(::postfix::virtual, $postfix_virtuals)
   }
 
+  $password_maps = hiera('postfix::password_maps', undef)
+  if is_hash($password_maps) {
+    create_resources('profile::smtp::passwordmap', $password_maps)
+  }
+
+  # mail aliasses
+  $smtp_mailaliases = hiera('smtp::mailaliases', undef)
+  if is_hash($smtp_mailaliases) {
+    create_resources(
+      mailalias,
+      $smtp_mailaliases,
+      # update aliases.db
+      { 'notify' => Exec['newaliases'] }
+    )
+  }
+
   # are we dealing with mailman3? If so, we need to load our custom
   # ::postfix::mta replacement class and also open the firewall
   $mailman3 = hiera('postfix::mailman3', false)
@@ -41,10 +57,13 @@ class profile::smtp {
     include ::profile::smtp::mailman3
   }
 
+  # mailserver?
+  $userrelay = hiera('userrelay', false)
+
   # handle opening the firewall when we're an mta (we don't need this
   # for satellite systems)
   $mta = hiera('postfix::mta', false)
-  if ($mta or $mailman3) {
+  if ($mta or $mailman3 or $userrelay) {
     # SMTP operates on port 25 by definition, if the server isn't
     # operating on that port there is likely an issue
     firewall { '025 accept all SMTP traffic':

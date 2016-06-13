@@ -55,5 +55,51 @@ class profile::jira {
       action => accept,
     }
   }
+
+  # export nginx bits if they are defined
+  $nginx_export = hiera('nginx::exporttag', undef)
+  if ($nginx_export)
+  {
+    validate_string($nginx_export)
+
+    $ssl_cert_name = hiera('nginx::ssl_cert_name')
+    $ssl_cert_chain = hiera('nginx::ssl_cert_chain')
+    $ssl_dhparam = hiera('nginx::ssl_dhparam')
+
+    $jira_proxy = hiera('jira::proxy')
+    validate_hash($jira_proxy)
+
+    $jira_sitename = $jira_proxy['proxyName']
+
+    # Export the vhost
+    @@nginx::resource::vhost { "nginx-${jira_sitename}":
+      ensure             => present,
+      server_name        => [[$jira_sitename,],],
+      access_log         => "/var/log/nginx/jira-${jira_sitename}_access.log",
+      error_log          => "/var/log/nginx/jira-${jira_sitename}_error.log",
+      autoindex          => 'off',
+      proxy              => "http://${::fqdn}:${jira_tomcatPort}",
+      proxy_read_timeout => '300',
+      rewrite_to_https   => true,
+      ssl                => true,
+      # lint:ignore:80chars
+      ssl_cert           => "/etc/pki/tls/certs/${ssl_cert_name}-${ssl_cert_chain}.pem",
+      # lint:endignore
+      ssl_key            => "/etc/pki/tls/private/${ssl_cert_name}.pem",
+      ssl_dhparam        => "/etc/pki/tls/certs/${ssl_dhparam}.pem",
+      tag                => $nginx_export,
+      add_header         => {
+        'proxy_redirect' => 'off',
+      },
+      proxy_set_header   => [
+        'Host $host',
+        'X-Real-IP $remote_addr',
+        'X-Forwarded-For $proxy_add_x_forwarded_for',
+        'X-Forwarded-Proto $scheme',
+        'X-Forwarded-Port $server_port',
+        'Accept-Encoding ""',
+      ],
+    }
+  }
 }
 

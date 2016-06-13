@@ -1,5 +1,5 @@
-# class profile::jenkins_job_builder
 class profile::jenkins_job_builder {
+  include ::python
   include ::jjb
 
   $jjb_users = hiera('users_jenkins_job_builder', undef)
