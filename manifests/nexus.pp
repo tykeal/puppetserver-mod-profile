@@ -60,7 +60,7 @@ class profile::nexus {
   $ssl_cert_name = hiera('nginx::ssl_cert_name', undef)
   $ssl_cert_chain = hiera('nginx::ssl_cert_chain', undef)
 
-  if (is_string($ssl_cert_name) and is_string($ssl_cert_chain)) {
+  if ($ssl_cert_name and $ssl_cert_chain) {
     $_ssl_cert = "/etc/pki/tls/certs/${ssl_cert_name}-${ssl_cert_chain}.pem"
     $_ssl_key = "/etc/pki/tls/private/${ssl_cert_name}.pem"
     $_ssl = true
