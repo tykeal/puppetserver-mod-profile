@@ -58,42 +58,42 @@ class profile::apache {
 
 
     # export the nginx vhost for all sites defined
-    each(keys($vhosts)) |$site| {
-      # assume that $site is the servername
-      if has_key($vhosts[$site], 'servername') {
-        $_servername = $vhosts[$site]['servername']
-      } else {
-        $_servername = $site
-      }
-
-      if has_key($vhosts[$site], 'port') {
-        $_port = $vhosts[$site]['port']
-      } else {
-        $_port = '80'
-      }
-
-      @@nginx::resource::vhost { "apache-${site}":
-        ensure           => present,
-        server_name      => $_servername,
-        access_log       => "/var/log/nginx/${_servername}_access.log",
-        error_log        => "/var/log/nginx/${_servername}_error.log",
-        autoindex        => 'off',
-        proxy            => "http://${::fqdn}:${_port}",
-        proxy_set_header => [
-            'Host $host',
-            'X-Real-IP $remote_addr',
-            'X-Forwarded-For $proxy_add_x_forwarded_for',
-            'X-Forwarded-Proto $scheme',
-            'X-Forwarded-Port $server_port',
-            'Accept-Encoding ""',
-          ],
-        ssl              => $_ssl,
-        rewrite_to_https => $_ssl,
-        ssl_cert         => $_ssl_cert,
-        ssl_key          => $_ssl_key,
-        ssl_dhparam      => $_ssl_dhparam,
-        add_header       => $_add_header,
-      }
-    }
-  }
+#    each(keys($vhosts)) |$site| {
+#      # assume that $site is the servername
+#      if has_key($vhosts[$site], 'servername') {
+#        $_servername = $vhosts[$site]['servername']
+#      } else {
+#        $_servername = $site
+#      }
+#
+#      if has_key($vhosts[$site], 'port') {
+#        $_port = $vhosts[$site]['port']
+#      } else {
+#        $_port = '80'
+#      }
+#
+#      @@nginx::resource::vhost { "apache-${site}":
+#        ensure           => present,
+#        server_name      => $_servername,
+#        access_log       => "/var/log/nginx/${_servername}_access.log",
+#        error_log        => "/var/log/nginx/${_servername}_error.log",
+#        autoindex        => 'off',
+#        proxy            => "http://${::fqdn}:${_port}",
+#        proxy_set_header => [
+#            'Host $host',
+#            'X-Real-IP $remote_addr',
+#            'X-Forwarded-For $proxy_add_x_forwarded_for',
+#            'X-Forwarded-Proto $scheme',
+#            'X-Forwarded-Port $server_port',
+#            'Accept-Encoding ""',
+#          ],
+#        ssl              => $_ssl,
+#        rewrite_to_https => $_ssl,
+#        ssl_cert         => $_ssl_cert,
+#        ssl_key          => $_ssl_key,
+#        ssl_dhparam      => $_ssl_dhparam,
+#        add_header       => $_add_header,
+#      }
+#    }
+#  }
 }
