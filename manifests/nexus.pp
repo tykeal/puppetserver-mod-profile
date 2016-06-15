@@ -165,8 +165,8 @@ class profile::nexus {
 
   @@nginx::resource::location { "nginx_nexus_${nexus_sitename}-content":
     ensure              => present,
-    ssl                 => true,
-    ssl_only            => true,
+    ssl                 => $_ssl,
+    ssl_only            => $_ssl,
     vhost               => "nginx_nexus-${nexus_sitename}",
     location            => $content_location,
     autoindex           => 'off',
@@ -178,8 +178,8 @@ class profile::nexus {
 
   @@nginx::resource::location { "nginx_nexus_${nexus_sitename}-staging":
     ensure              => present,
-    ssl                 => true,
-    ssl_only            => true,
+    ssl                 => $_ssl,
+    ssl_only            => $_ssl,
     vhost               => "nginx_nexus-${nexus_sitename}",
     location            => $staging_location,
     autoindex           => 'off',
