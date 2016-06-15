@@ -1,5 +1,11 @@
+# class profile::apache
 class profile::apache {
   include ::apache
+
+  # Vhosts
+  $vhosts = hiera('apache::vhosts', {})
+  validate_hash($vhosts)
+  create_resources('apache::vhost', $vhosts)
 
   # for now until we come up with a way to nicely read out all the ports
   # we listen on, we'll just automatically open 80 & 443

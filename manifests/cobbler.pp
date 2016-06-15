@@ -5,15 +5,23 @@ class profile::cobbler {
 
   include ::profile::cobbler::dhcp
   include ::profile::cobbler::selinux
-  # Pending this as we don't have kickstarts files yet
-  #include ::profile::cobbler::kickstarts
+  include ::profile::cobbler::firewall
+  include ::profile::cobbler::kickstarts
+  include ::profile::cobbler::snippets
   include ::profile::cobbler::objects
 
-  Class['cobbler'] ->
+  # Apache configuration
+  include ::profile::cobbler::apache
+
+  # Cobbler's classes order
+  Class['::cobbler'] ->
+  Class['::profile::cobbler::apache'] ->
+  Class['::profile::cobbler::selinux'] ->
+  Class['::profile::cobbler::firewall'] ->
   Class[
     '::profile::cobbler::dhcp',
-    #'::profile::cobbler::kickstarts',
-    '::profile::cobbler::selinux',
+    '::profile::cobbler::kickstarts',
+    '::profile::cobbler::snippets',
     '::profile::cobbler::objects'
   ]
 }
