@@ -105,9 +105,6 @@ class profile::nexus {
   # purpose ;)
   $nginx_uploadlimit = hiera('nexus::upload_limit', '512m')
 
-  # default hsts to 180 days (SSLLabs recommended)
-  $hsts_age = hiera('nginx::max-age', '15552000')
-
   # It's possible that we may end up needing to handle special case rewrite
   # rules. It would be great if we didn't have to, but such is life
   $nginx_rewrite_rules = hiera('nginx::rewrite_rules', [])
