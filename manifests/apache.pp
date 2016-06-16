@@ -61,9 +61,9 @@ class profile::apache {
     each(keys($vhosts)) |$site| {
       # assume that $site is the servername
       if has_key($vhosts[$site], 'servername') {
-        $_servername = $vhosts[$site]['servername']
+        $_servername = any2array($vhosts[$site]['servername'])
       } else {
-        $_servername = $site
+        $_servername = [$site]
       }
 
       if has_key($vhosts[$site], 'port') {
