@@ -85,7 +85,6 @@ class profile::apache {
             'X-Forwarded-For $proxy_add_x_forwarded_for',
             'X-Forwarded-Proto $scheme',
             'X-Forwarded-Port $server_port',
-            'Accept-Encoding ""',
           ],
         ssl              => $_ssl,
         rewrite_to_https => $_ssl,
