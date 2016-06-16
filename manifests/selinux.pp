@@ -1,3 +1,4 @@
+# class profile::selinux
 class profile::selinux {
   include ::selinux::base
 
@@ -21,4 +22,9 @@ class profile::selinux {
     checksum => 'md5',
   }
 
+  # configure hiera managed fcontexts
+  $fcontexts = hiera_hash('selinux::fcontexts', undef)
+  if is_hash($fcontexts) {
+    create_resources('::selinux::fcontext', $fcontexts)
+  }
 }
