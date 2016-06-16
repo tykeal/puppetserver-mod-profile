@@ -93,6 +93,7 @@ class profile::apache {
         ssl_key          => $_ssl_key,
         ssl_dhparam      => $_ssl_dhparam,
         add_header       => $_add_header,
+        tag              => $nginx_export,
       }
     }
   }
