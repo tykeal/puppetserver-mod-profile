@@ -27,38 +27,41 @@ class profile::apache {
   # export tag defined
   $nginx_export = hiera('nginx::exporttag', undef)
   if is_string($nginx_export) {
-    # ssl info, this assumes that if there are multiple sites that they all
-    # share the same cert (splat certs)
-    $ssl_cert_name = hiera('nginx::ssl_cert_name', undef)
-    $ssl_cert_chain = hiera('nginx::ssl_cert_chain', undef)
-
-    if ($ssl_cert_name and $ssl_cert_chain) {
-      $_ssl_cert = "/etc/pki/tls/certs/${ssl_cert_name}-${ssl_cert_chain}.pem"
-      $_ssl_key = "/etc/pki/tls/private/${ssl_cert_name}.pem"
-      $_ssl = true
-
-      # default hsts to 180 days (SSLLabs recommended)
-      $hsts_age = hiera('nginx::max-age', '15552000')
-
-      $_add_header = {
-        'Strict-Transport-Security' => "max-age=${hsts_age}",
-      }
-    } else {
-      $_ssl_cert = undef
-      $_ssl = false
-      $_add_header = undef
-    }
-
-    $ssl_dhparam = hiera('nginx::ssl_dhparam', undef)
-    if ($ssl_dhparam) {
-      $_ssl_dhparam = "/etc/pki/tls/certs/${ssl_dhparam}.pem"
-    } else {
-      $_ssl_dhparam = undef
-    }
-
+    $ssl_apache_certs = hiera('nginx::ssl_apache_certs', undef)
+    # default hsts to 180 days (SSLLabs recommended)
+    $hsts_age = hiera('nginx::max-age', '15552000')
 
     # export the nginx vhost for all sites defined
     each(keys($vhosts)) |$site| {
+      # SSL
+      if (is_hash($ssl_apache_certs) and has_key($ssl_apache_certs, $site)) {
+        if (has_key($ssl_apache_certs[$site], 'cert_name') and
+            has_key($ssl_apache_certs[$site], 'cert_chain')) {
+
+          $cert_name = $ssl_apache_certs[$site]['cert_name']
+          $cert_chain = $ssl_apache_certs[$site]['cert_chain']
+
+          $_ssl_cert = "/etc/pki/tls/certs/${cert_name}-${cert_chain}.pem"
+          $_ssl_key = "/etc/pki/tls/certs/${cert_name}.pem"
+          $_ssl = true
+          $_add_header = {
+            'Strict-Transport-Security' => "max-age=${hsts_age}",
+          }
+        } else {
+          $_ssl_cert = undef
+          $_ssl = false
+          $_add_header = undef
+        }
+
+        if (has_key($ssl_apache_certs[$site], 'dhparam')) {
+          $dhparam = $ssl_apache_certs[$site]['dhparam']
+
+          $_ssl_dhparam = "/etc/pki/tls/certs/${dhparam}.pem"
+        } else {
+          $_ssl_dhparam = undef
+        }
+      }
+
       # assume that $site is the servername
       if has_key($vhosts[$site], 'servername') {
         $_servername = any2array($vhosts[$site]['servername'])
