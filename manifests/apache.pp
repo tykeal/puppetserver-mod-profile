@@ -42,7 +42,7 @@ class profile::apache {
           $cert_chain = $ssl_apache_certs[$site]['cert_chain']
 
           $_ssl_cert = "/etc/pki/tls/certs/${cert_name}-${cert_chain}.pem"
-          $_ssl_key = "/etc/pki/tls/certs/${cert_name}.pem"
+          $_ssl_key = "/etc/pki/tls/private/${cert_name}.pem"
           $_ssl = true
           $_add_header = {
             'Strict-Transport-Security' => "max-age=${hsts_age}",
