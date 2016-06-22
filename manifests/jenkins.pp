@@ -28,9 +28,26 @@ class profile::jenkins {
   # MUST set a prefix
   $nginx_merged_vhost = hiera('nginx::export::merged_vhost', false)
 
+  # default hsts to 180 days (SSLLabs recommended)
+  $hsts_age = hiera('nginx::max-age', '15552000')
+
   # need to load the SSL information so that it can be used
-  $ssl_cert_name = hiera('nginx::ssl_cert_name')
-  $ssl_cert_chain = hiera('nginx::ssl_cert_chain')
+  $ssl_cert_name = hiera('nginx::ssl_cert_name', undef)
+  $ssl_cert_chain = hiera('nginx::ssl_cert_chain', undef)
+
+  if ($ssl_cert_name and $ssl_cert_chain) {
+    $_ssl_cert = "/etc/pki/tls/certs/${ssl_cert_name}-${ssl_cert_chain}.pem"
+    $_ssl_key = "/etc/pki/tls/private/${ssl_cert_name}.pem"
+    $_ssl = true
+    $_add_header = {
+      'Strict-Transport-Security' => "max-age=${hsts_age}",
+    }
+  } else {
+    $_ssl_cert = undef
+    $_ssl_key = undef
+    $_ssl = false
+    $_add_header = undef
+  }
 
   # we don't force all of our sites to use more secure dhparam settings
   # we should, but doing so now would break a lot of stuff!
@@ -74,9 +91,6 @@ class profile::jenkins {
   @@nginx::resource::vhost { "nginx_jenkins-${jenkins_sitename}":
     ensure => 'absent',
   }
-
-  # default hsts to 180 days (SSLLabs recommended)
-  $hsts_age = hiera('nginx::max-age', '15552000')
 
   # make it possible to push groovy init scripts into jenkins
   include ::jenkins::params
@@ -141,12 +155,10 @@ class profile::jenkins {
       autoindex         => 'off',
       proxy             => "http://${::fqdn}:${jenkins_port}",
       tag               => $nginx_export,
-      ssl               => true,
-      rewrite_to_https  => true,
-      # lint:ignore:80chars
-      ssl_cert          => "/etc/pki/tls/certs/${ssl_cert_name}-${ssl_cert_chain}.pem",
-      # lint:endignore
-      ssl_key           => "/etc/pki/tls/private/${ssl_cert_name}.pem",
+      ssl               => $_ssl,
+      rewrite_to_https  => $_ssl,
+      ssl_cert          => $_ssl_cert,
+      ssl_key           => $_ssl_key,
       ssl_dhparam       => $_ssl_dhparam,
       vhost_cfg_prepend => $vhost_cfg_prepend,
       proxy_set_header  => [
@@ -157,9 +169,7 @@ class profile::jenkins {
           'X-Forwarded-Port $server_port',
           'Accept-Encoding ""',
         ],
-      add_header        => {
-        'Strict-Transport-Security' => "max-age=${hsts_age}",
-        },
+      add_header        => $_add_header,
     }
   }
 
