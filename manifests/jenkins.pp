@@ -78,6 +78,57 @@ class profile::jenkins {
   # default hsts to 180 days (SSLLabs recommended)
   $hsts_age = hiera('nginx::max-age', '15552000')
 
+  # make it possible to push groovy init scripts into jenkins
+  include ::jenkins::params
+  $jenkins_statedir = hiera('jenkins::localstatedir',
+    $::jenkins::params::localstatedir)
+  $jenkins_user = hiera('jenkins::user', $::jenkins::params::user)
+  $jenkins_group = hiera('jenkins::group', $::jenkins::params::group)
+
+  file { "${jenkins_statedir}/init.groovy.d":
+    ensure => directory,
+    owner  => $jenkins_user,
+    group  => $jenkins_group,
+    mode   => '0755',
+  }
+
+  # optional groovy init scripts
+  $jenkins_groovy_init = hiera_hash('jenkins::groovy_init', undef)
+  if is_hash($jenkins_groovy_init) {
+    each(keys($jenkins_groovy_init)) |$init| {
+      if has_key($jenkins_groovy_init[$init], 'ensure') {
+        $init_ensure = $jenkins_groovy_init[$init]['ensure']
+      } else {
+        $init_ensure = 'file'
+      }
+
+      if has_key($jenkins_groovy_init[$init], 'content') {
+        $_content = $jenkins_groovy_init[$init]['content']
+      } else {
+        $_content = undef
+      }
+
+      if has_key($jenkins_groovy_init[$init], 'source') {
+        $_source = $jenkins_groovy_init[$init]['source']
+      } else {
+        if ($_content) {
+          $_source = undef
+        } else {
+          $_source = "puppet:///modules/${module_name}/jenkins/${init}"
+        }
+      }
+
+      file { "${jenkins_statedir}/init.groovy.d/${init}":
+        ensure  => $init_ensure,
+        owner   => $jenkins_user,
+        group   => $jenkins_group,
+        mode    => '0444',
+        content => $_content,
+        source  => $_source,
+      }
+    }
+  }
+
   # Export the Jenkins vhost but only if nginx_merged_vhost is false
   unless ($nginx_merged_vhost) {
     @@nginx::resource::vhost { "nginx-${jenkins_sitename}":
@@ -113,7 +164,9 @@ class profile::jenkins {
   }
 
   if ($jenkins_prefix) {
+    # lint:ignore:80chars
     @@nginx::resource::location { "nginx_jenkins-${jenkins_sitename}-prefix-${jenkins_prefix}":
+    # lint:endignore
       ensure           => present,
       ssl              => true,
       ssl_only         => true,
@@ -260,7 +313,9 @@ class profile::jenkins {
   # NOTE: Upstream Jenkins module does not currently support moving the
   # Jenkins homedir.
   nrpe::command { 'check_jenkins_process':
+    # lint:ignore:80chars
     command => "${nagios_plugin_dir}/check_procs -c 1:1 -C java --argument-array='-DJENKINS_HOME=${jenkins_dir}'"
+    # lint:endignore
   }
 
   ::nagios::resource { "NRPE-Jenkins-Process-${::fqdn}":
@@ -280,7 +335,9 @@ class profile::jenkins {
 
   # Check Jenkins is not filling up disk
   nrpe::command { 'check_jenkins_disk_space':
+    # lint:ignore:80chars
     command => "${nagios_plugin_dir}/check_disk -M -w ${jenkins_dir_warn}% -c ${jenkins_dir_crit}% ${jenkins_dir}"
+    # lint:endignore
   }
 
   ::nagios::resource { "NRPE-Jenkins-Home-Disk-Space-${::fqdn}":
@@ -306,7 +363,9 @@ class profile::jenkins {
     nagiostag          => $nagios_tag,
     resourcedef        => {
       service_description => 'HTTP - Jenkins Web UI',
+      # lint:ignore:80chars
       check_command       => "check_http!-p ${jenkins_port} -u ${jenkins_nagios_url} 'Jenkins'",
+      # lint:endignore
     },
   }
 
