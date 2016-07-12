@@ -17,4 +17,4 @@ curl -X POST \
 "http://localhost:8080/pdb/cmd/v1?certname=${NODE}&command=deactivate_node&version=3"
 
 # Clean up the node certificate so that it can't be used anymore
-/usr/local/bin/puppet node clean ${NODE}
+/opt/puppetlabs/bin/puppet node clean ${NODE}
