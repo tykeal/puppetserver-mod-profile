@@ -1,3 +1,4 @@
+# class profile::puppetserver
 class profile::puppetserver {
   # manage puppetserver via puppet module
 #  class { '::puppetserver': }
@@ -17,4 +18,13 @@ class profile::puppetserver {
   }
 
   include ::puppetdb::master::config
+
+  # Script for easy decommissioning of nodes
+  file { '/usr/local/bin/decommission_node.sh':
+    ensure => file,
+    owner  => 'root',
+    group  => 'root',
+    mode   => '0600',
+    source => "puppet:///modules/${module_name}/puppet/decommission_node.sh"
+  }
 }
