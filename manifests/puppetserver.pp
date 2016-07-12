@@ -24,7 +24,7 @@ class profile::puppetserver {
     ensure => file,
     owner  => 'root',
     group  => 'root',
-    mode   => '0600',
+    mode   => '0500',
     source => "puppet:///modules/${module_name}/puppet/decommission_node.sh"
   }
 }
