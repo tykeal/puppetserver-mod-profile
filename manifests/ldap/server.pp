@@ -1,6 +1,6 @@
 # class profile::ldap::server
 class profile::ldap::server {
-  include ::ldap::server
+  include ::openldap::server
 
   firewall { '30 accept LDAP traffic':
     proto  => 'tcp',
