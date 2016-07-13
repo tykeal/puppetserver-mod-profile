@@ -38,7 +38,7 @@ class profile::ldap::server {
   }
 
   # deploy custom schemas
-  $custom_schema = hiera_hash('openldap::server:schema::definition', undef)
+  $custom_schema = hiera_hash('openldap::server::schema::definition', undef)
   if (is_hash($custom_schema)) {
     $custom_schema.each |$schema_name, $schema| {
       if has_key($schema, 'content') {
