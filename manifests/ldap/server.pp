@@ -34,7 +34,7 @@ class profile::ldap::server {
 
   $ldap_schema = hiera_hash('openldap::server::schema', undef)
   if (is_hash($ldap_schema)) {
-    create_resource('::openldap::server::schema', $ldap_schema)
+    create_resources('::openldap::server::schema', $ldap_schema)
   }
 
   # deploy custom schemas
