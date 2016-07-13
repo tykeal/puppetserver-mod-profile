@@ -37,6 +37,43 @@ class profile::ldap::server {
     create_resource('::openldap::server::schema', $ldap_schema)
   }
 
+  # deploy custom schemas
+  $custom_schema = hiera_hash('openldap::server:schema::definition', undef)
+  if (is_hash($custom_schema)) {
+    $custom_schema.each |$schema_name, $schema| {
+      if has_key($schema, 'content') {
+        # lint:ignore:variable_scope
+        $_content = $schema['schema']
+        # lint:endignore
+      } else {
+        $_content = undef
+      }
+
+      if has_key($schema, 'source') {
+        # lint:ignore:variable_scope
+        $_source = $schema['source']
+        # lint:endignore
+      } else {
+        $_source = undef
+      }
+
+      $schema_path = $::osfamily ? {
+        'Debian' => "/etc/ldap/schema/${schema_name}.schema",
+        'Redhat' => "/etc/openldap/schema/${schema_name}.schema",
+      }
+
+      file { "custom ${schema_name}":
+        ensure  => file,
+        path    => $schema_path,
+        owner   => 'root',
+        group   => 'root',
+        mode    => '0444',
+        content => $_content,
+        source  => $_source,
+      }
+    }
+  }
+
   firewall { '30 accept LDAP traffic':
     proto  => 'tcp',
     dport  => ['389', '636'],
