@@ -1,6 +1,7 @@
 # class profile::ldap::server
 class profile::ldap::server {
   include ::openldap::server
+  include ::openldap::client::ldapvi
 
   $ldap_access = hiera_hash('openldap::server::access', undef)
   if (is_hash($ldap_access)) {
