@@ -29,7 +29,7 @@ class profile::git::daemon {
 
   $gitd_server_args = hiera('gitd::xinetd::server_args',
     # lint:ignore:80chars
-    "--interpolated-path=${gitd_repos_path}/%H%D --init-timeout=10 --timeout=600 --export-all --syslog --inetd --verbose")
+    "--base-path=${gitd_repos_path} --init-timeout=10 --timeout=600 --export-all --syslog --inetd --verbose")
     # lint:endignore
   validate_string($gitd_server_args)
 
