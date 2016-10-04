@@ -12,7 +12,7 @@ class profile::confluence {
 
   # Export an nginx site if we need to
   $nginx_export = hiera('nginx::exporttag', undef)
-  if is_string($nginx_export) {
+  if ($nginx_export and is_string($nginx_export)) {
     # Get the site name. This is a required parameter if exporting nginx
     $confluence_sitename = hiera('nginx::export::vhost')
     validate_string($confluence_sitename)
