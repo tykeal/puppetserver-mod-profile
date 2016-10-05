@@ -2,6 +2,7 @@
 class profile::confluence {
   include ::profile::java
   include ::confluence
+  include ::msyql_java_connector
 
   # Make sure that java gets setup before confluence
   Class['::profile::java'] ->
