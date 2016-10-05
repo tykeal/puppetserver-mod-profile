@@ -4,6 +4,10 @@ class profile::confluence {
   include ::confluence
   include ::mysql_java_connector
 
+  Archive {
+    extract_path => '/tmp'
+  }
+
   # Make sure that java gets setup before confluence
   Class['::profile::java'] ->
   Class['::profile::confluence']
