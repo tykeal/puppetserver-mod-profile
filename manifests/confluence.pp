@@ -24,7 +24,7 @@ class profile::confluence {
   # lint:ignore:80chars
   file { "/opt/confluence/${confluence_version}/confluence/WEB-INF/lib/mysql-connector-java-${mysql_java_connector_version}-bin.jar":
     ensure => file,
-    source => "/opt/${mysql_java_connector_install_dir}/mysql-connector-java-${mysql_java_connector_version}/mysql-connector-java-${mysql_java_connector_version}-bin.jar",
+    source => "${mysql_java_connector_install_dir}/mysql-connector-java-${mysql_java_connector_version}/mysql-connector-java-${mysql_java_connector_version}-bin.jar",
     notify => Service['confluence'],
   }
   # lint:endignore
