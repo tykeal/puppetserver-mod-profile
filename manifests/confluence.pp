@@ -22,7 +22,7 @@ class profile::confluence {
   $mysql_java_connector_install_dir = $::mysql_java_connector::installdir
 
   # lint:ignore:80chars
-  file { "/opt/confluence/${confluence_version}/confluence/WEB-INF/lib/mysql-connector-java-${mysql_java_connector_version}-bin.jar":
+  file { "/opt/confluence/atlassian-confluence-${confluence_version}/confluence/WEB-INF/lib/mysql-connector-java-${mysql_java_connector_version}-bin.jar":
     ensure => file,
     source => "${mysql_java_connector_install_dir}/mysql-connector-java-${mysql_java_connector_version}/mysql-connector-java-${mysql_java_connector_version}-bin.jar",
     notify => Service['confluence'],
