@@ -117,6 +117,45 @@ class profile::confluence {
       $_nginx_customization)
   }
 
+  # Database setup
+  $db_settings = hiera('confluence::db_settings', undef)
+  if ($db_settings) {
+    validate_hash($db_settings)
+
+    validate_string($db_settings['db_tag'])
+    validate_string($db_settings['database'])
+    validate_string($db_settings['username'])
+    validate_string($db_settings['password'])
+
+    # export the database configuration
+    @@::mysql::db { "${db_settings['database']}_${::fqdn}":
+      user     => $db_settings['username'],
+      password => $db_settings['password'],
+      dbname   => $db_settings['database'],
+      host     => $::ipaddress,
+      grant    => [ 'ALL' ],
+      collate  => 'utf8_bin',
+      tag      => $db_settings['db_tag'],
+    }
+
+    # Create extra DB exports / mappings if needed
+    if (has_key($db_settings, 'extra_db_hosts')) {
+      validate_hash($db_settings['extra_db_hosts'])
+
+      each($db_settings['extra_db_hosts']) |$conn_host| {
+        @@mysql::db { "${db_settings['database']}_${::fqdn}_${conn_host}":
+          user     => $db_settings['username'],
+          password => $db_settings['password'],
+          dbname   => $db_settings['database'],
+          host     => $::ipaddress,
+          grant    => [ 'ALL' ],
+          collate  => 'utf8_bin',
+          tag      => $db_settings['db_tag'],
+        }
+      }
+    }
+  }
+
   ::profile::firewall::rule { 'accept incoming confluence traffic':
     priority => '500',
     proto    => 'tcp',
