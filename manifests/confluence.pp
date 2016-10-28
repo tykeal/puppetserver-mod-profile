@@ -1,12 +1,33 @@
 # class profile::confluence
 class profile::confluence {
   include ::profile::java
-  include ::confluence
   include ::mysql_java_connector
+  include ::confluence
 
   # Make sure that java gets setup before confluence
   Class['::profile::java'] ->
-  Class['::profile::confluence']
+  Class['::mysql_java_connector'] ->
+  Class['::confluence']
+
+  # Confluence refuses to start if the mysql_java_connector is a symlink, we can
+  # To work around this we forcibly copy the installed connector into the
+  # correct place
+
+  # no default version as the confluence module requires the version be set
+  $confluence_version = hiera('confluence::version')
+
+  # grab the mysql_java_connector variables directly out of the class as it's
+  # the only way to sanely acquire it since they don't use a params class :(
+  $mysql_java_connector_version = $::mysql_java_connector::version
+  $mysql_java_connector_install_dir = $::mysql_java_connector::installdir
+
+  # lint:ignore:80chars
+  file { "/opt/confluence/${confluence_version}/confluence/WEB-INF/lib/mysql-connector-java-${mysql_java_connector_version}-bin.jar":
+    ensure => file,
+    source => "/opt/${mysql_java_connector_install_dir}/mysql-connector-java-${mysql_java_connector_version}/mysql-connector-java-${mysql_java_connector_version}-bin.jar",
+    notify => Service['confluence'],
+  }
+  # lint:endignore
 
   $confluence_port = hiera('confluence::tomcat_port', '8090')
   validate_integer($confluence_port, 65535, 1024)
