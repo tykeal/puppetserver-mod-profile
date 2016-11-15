@@ -6,6 +6,7 @@ class profile::base {
   include ::profile::external_facts
   include ::profile::firewall
   include ::profile::hardware
+  include ::profile::hosts
   include ::profile::nagios::client
   # do not config ntp temporarily
 #  include ::profile::ntp
