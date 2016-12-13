@@ -1,5 +1,6 @@
 # class profile::ldap::server
 class profile::ldap::server {
+  include ::profile::ldap::client
   include ::openldap::server
   include ::openldap::client::ldapvi
 
