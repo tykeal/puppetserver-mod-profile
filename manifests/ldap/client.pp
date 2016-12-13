@@ -45,6 +45,7 @@ class profile::ldap::client {
       nsstools::add_cert { $cacert:
         certdir => $tls_cacertdir,
         cert    => $_certname,
+        require => Sslmgmt::Ca_dh[$cacert],
       }
     }
   }
