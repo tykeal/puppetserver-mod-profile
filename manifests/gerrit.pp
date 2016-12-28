@@ -138,19 +138,19 @@ class profile::gerrit {
       add_header       => $_add_header,
     }
 
-    @@nginx::resource::location { "nginx_gerrit-${::fqdn}_${suburl}":
-      ensure           => present,
-      ssl              => true,
-      ssl_only         => true,
-      vhost            => "nginx_gerrit-${::fqdn}",
-      location         => $suburl,
-      proxy            => "http://${::fqdn}:${backend_listenport}",
-      tag              => hiera('nginx::exporttag'),
-      proxy_set_header => [
-          'X-Forwarded-For $proxy_add_x_forwarded_for',
-          'Host $host',
-        ],
-    }
+    # @@nginx::resource::location { "nginx_gerrit-${::fqdn}_${suburl}":
+    #   ensure           => present,
+    #   ssl              => true,
+    #   ssl_only         => true,
+    #   vhost            => "nginx_gerrit-${::fqdn}",
+    #   location         => $suburl,
+    #   proxy            => "http://${::fqdn}:${backend_listenport}",
+    #   tag              => hiera('nginx::exporttag'),
+    #   proxy_set_header => [
+    #       'X-Forwarded-For $proxy_add_x_forwarded_for',
+    #       'Host $host',
+    #     ],
+    # }
   }
 
   # Monitoring
