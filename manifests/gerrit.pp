@@ -75,7 +75,8 @@ class profile::gerrit {
   validate_string($gerrit_config['httpd']['listenUrl'])
 
   # lint:ignore:80chars
-  $url_parser = '^(proxy-)?(http|https):\/\/(([a-z0-9]+[\-\.]{1}[a-z0-9]+*\.[a-z]{2,})|\*)(:([0-9]{1,5}))?(\/.*)?$'
+  $url_parser = '(proxy-)?(http|https):\/\/(([a-z0-9-]+[\-\.]{1}[a-z0-9-]+*\.[a-z]{2,})|\*)(:([0-9]{1,5}))?(\/.*)?'
+  # $url_parser = '^(proxy-)?(http|https):\/\/(([a-z0-9]+[\-\.]{1}[a-z0-9]+*\.[a-z]{2,})|\*)(:([0-9]{1,5}))?(\/.*)?$'
   # lint:endignore
 
   $sitename = regsubst($gerrit_config['gerrit']['canonicalWebUrl'],
