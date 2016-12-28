@@ -134,7 +134,7 @@ class profile::gerrit {
       ssl_cert         => $_ssl_cert,
       ssl_key          => $_ssl_key,
       ssl_dhparam      => $_ssl_dhparam,
-      rewrite_to_https => true,
+      rewrite_to_https => $_ssl,
       add_header       => $_add_header,
     }
 
