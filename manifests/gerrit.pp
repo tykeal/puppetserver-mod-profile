@@ -75,19 +75,19 @@ class profile::gerrit {
   validate_string($gerrit_config['httpd']['listenUrl'])
 
   # lint:ignore:80chars
-  $url_parser = '(proxy-)?(http|https):\/\/(([a-z0-9-]+[\-\.]{1}[a-z0-9-]+*\.[a-z]{2,})|\*)(:([0-9]{1,5}))?(\/.*)?'
+  $url_parser = '(proxy-)?(http[s]?):\/\/(([a-z0-9-]+\.([a-z0-9-]+\.)+[a-z]{2,})|\*)(:([0-9]{1,5}))?(\/.*)?'
   # $url_parser = '^(proxy-)?(http|https):\/\/(([a-z0-9]+[\-\.]{1}[a-z0-9]+*\.[a-z]{2,})|\*)(:([0-9]{1,5}))?(\/.*)?$'
   # lint:endignore
 
   $sitename = regsubst($gerrit_config['gerrit']['canonicalWebUrl'],
     $url_parser, '\3', 'EI')
   $backend_listenport = regsubst($gerrit_config['httpd']['listenUrl'],
-    $url_parser, '\6', 'EI')
+    $url_parser, '\7', 'EI')
 
   # assume that a) a suburl is being used and b) that it matches on the
   # listenUrl side
   $suburl = regsubst($gerrit_config['gerrit']['canonicalWebUrl'],
-    $url_parser, '\7', 'EI')
+    $url_parser, '\8', 'EI')
 
   $nginx_export_vhost = hiera('nginx::export_vhost', true)
   validate_bool($nginx_export_vhost)
