@@ -178,9 +178,9 @@ class profile::jenkins {
     @@nginx::resource::location { "nginx_jenkins-${jenkins_sitename}-prefix-${jenkins_prefix}":
     # lint:endignore
       ensure           => present,
-      ssl              => true,
-      ssl_only         => true,
-      vhost            => $jenkins_sitename,
+      ssl              => $_ssl,
+      ssl_only         => $_ssl,
+      vhost            => "nginx-${jenkins_sitename}",
       location         => $jenkins_prefix,
       autoindex        => 'off',
       proxy            => "http://${::fqdn}:${jenkins_port}",
