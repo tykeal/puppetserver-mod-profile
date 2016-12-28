@@ -180,7 +180,7 @@ class profile::jenkins {
       ensure           => present,
       ssl              => true,
       ssl_only         => true,
-      server           => $jenkins_sitename,
+      vhost            => $jenkins_sitename,
       location         => $jenkins_prefix,
       autoindex        => 'off',
       proxy            => "http://${::fqdn}:${jenkins_port}",
