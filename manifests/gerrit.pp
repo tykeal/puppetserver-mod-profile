@@ -75,53 +75,66 @@ class profile::gerrit {
   validate_string($gerrit_config['httpd']['listenUrl'])
 
   # lint:ignore:80chars
-  $urlParser = '^(proxy-)?(http|https):\/\/(([a-z0-9]+[\-\.]{1}[a-z0-9]+*\.[a-z]{2,})|\*)(:([0-9]{1,5}))?(\/.*)?$'
+  $url_parser = '^(proxy-)?(http|https):\/\/(([a-z0-9]+[\-\.]{1}[a-z0-9]+*\.[a-z]{2,})|\*)(:([0-9]{1,5}))?(\/.*)?$'
   # lint:endignore
 
   $sitename = regsubst($gerrit_config['gerrit']['canonicalWebUrl'],
-    $urlParser, '\3', 'EI')
+    $url_parser, '\3', 'EI')
   $backend_listenport = regsubst($gerrit_config['httpd']['listenUrl'],
-    $urlParser, '\6', 'EI')
+    $url_parser, '\6', 'EI')
 
   # assume that a) a suburl is being used and b) that it matches on the
   # listenUrl side
   $suburl = regsubst($gerrit_config['gerrit']['canonicalWebUrl'],
-    $urlParser, '\7', 'EI')
+    $url_parser, '\7', 'EI')
 
   $nginx_export_vhost = hiera('nginx::export_vhost', true)
   validate_bool($nginx_export_vhost)
 
   if ($nginx_export_vhost) {
-    # need to load the SSL information so that it can be used
-    $ssl_cert_name = hiera('nginx::ssl_cert_name')
-    $ssl_cert_chain = hiera('nginx::ssl_cert_chain')
-    $ssl_dhparam = hiera('nginx::ssl_dhparam')
-
     # default hsts to 180 days (SSLLabs recommended)
     $hsts_age = hiera('nginx::max-age', '15552000')
+
+    # need to load the SSL information so that it can be used
+    $ssl_cert_name = hiera('nginx::ssl_cert_name', undef)
+    $ssl_cert_chain = hiera('nginx::ssl_cert_chain', undef)
+    $ssl_dhparam = hiera('nginx::ssl_dhparam', undef)
+
+    if ($ssl_cert_name and $ssl_cert_chain) {
+      $_ssl_cert = "/etc/pki/tls/certs/${ssl_cert_name}-${ssl_cert_chain}.pem"
+      $_ssl_key = "/etc/pki/tls/private/${ssl_cert_name}.pem"
+      $_ssl = true
+      $_add_header = {
+        'Strict-Transport-Security' =>  "max-age=${hsts_age}"
+      }
+    } else {
+      $_ssl_cert = undef
+      $_ssl_key = undef
+      $_ssl = false
+      $_add_header = undef
+    }
+
+    if ($ssl_dhparam) {
+      $_ssl_dhparam = "/etc/pki/tls/certs/${ssl_dhparam}.pem"
+    } else {
+      $_ssl_dhparam = undef
+    }
+
     @@nginx::resource::vhost { "nginx_gerrit-${::fqdn}":
-      # lint:ignore:arrow_alignment
-      ensure                        => present,
-      server_name                   => [[$sitename,],],
-      # lint:ignore:80chars
-      access_log                    => "/var/log/nginx/gerrit-${sitename}_access.log",
-      error_log                     => "/var/log/nginx/gerrit-${sitename}_error.log",
-      # lint:endignore
-      raw_append                    => "rewrite ^/\$ \$scheme://\$host${suburl}/;",
-      autoindex                     => 'off',
-      proxy                         => "http://${::fqdn}:${backend_listenport}",
-      tag                           => hiera('nginx::exporttag'),
-      ssl                           => true,
-      # lint:ignore:80chars
-      ssl_cert                      => "/etc/pki/tls/certs/${ssl_cert_name}-${ssl_cert_chain}.pem",
-      ssl_key                       => "/etc/pki/tls/private/${ssl_cert_name}.pem",
-      # lint:endignore
-      ssl_dhparam                   => "/etc/pki/tls/certs/${ssl_dhparam}.pem",
-      rewrite_to_https              => true,
-      add_header                    => {
-      # lint:endignore
-        'Strict-Transport-Security' => "max-age=${hsts_age}",
-        },
+      ensure           => present,
+      server_name      => [[$sitename,],],
+      access_log       => "/var/log/nginx/gerrit-${sitename}_access.log",
+      error_log        => "/var/log/nginx/gerrit-${sitename}_error.log",
+      raw_append       => "rewrite ^/\$ \$scheme://\$host${suburl}/;",
+      autoindex        => 'off',
+      proxy            => "http://${::fqdn}:${backend_listenport}",
+      tag              => hiera('nginx::exporttag'),
+      ssl              => $_ssl,
+      ssl_cert         => $_ssl_cert,
+      ssl_key          => $_ssl_key,
+      ssl_dhparam      => $_ssl_dhparam,
+      rewrite_to_https => true,
+      add_header       => $_add_header,
     }
 
     @@nginx::resource::location { "nginx_gerrit-${::fqdn}_${suburl}":
@@ -165,12 +178,10 @@ class profile::gerrit {
   # Verify the Gerrit SSH/git service is responding
   # NOTE: This is not testing any reverse proxy configuration!
   ::nagios::resource { "Gerrit-SSH-Status-${::fqdn}":
-    # lint:ignore:arrow_alignment
-    resource_type         => 'service',
-    defaultresourcedef    => $defaultserviceconfig,
-    nagiostag             => $nagios_tag,
-    resourcedef           => {
-    # lint:endignore
+    resource_type      => 'service',
+    defaultresourcedef => $defaultserviceconfig,
+    nagiostag          => $nagios_tag,
+    resourcedef        => {
       service_description => 'Gerrit SSH - git Status',
       check_command       => "check_ssh!-t 30 -p ${git_port}",
     },
@@ -179,12 +190,10 @@ class profile::gerrit {
   # Verify that Gerrit's webUI is responding
   # NOTE: This is not testing any reverse proxy configuration!
   ::nagios::resource { "Gerrit-WebUI-Status-${::fqdn}":
-    # lint:ignore:arrow_alignment
-    resource_type         => 'service',
-    defaultresourcedef    => $defaultserviceconfig,
-    nagiostag             => $nagios_tag,
-    resourcedef           => {
-    # lint:endignore
+    resource_type      => 'service',
+    defaultresourcedef => $defaultserviceconfig,
+    nagiostag          => $nagios_tag,
+    resourcedef        => {
       service_description => 'Gerrit WebUI',
       # lint:ignore:80chars
       check_command       => "check_http!-p ${backend_listenport} -u ${suburl}/#q/status:open,n,z -s 'Gerrit Code Review'",
