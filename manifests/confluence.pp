@@ -113,10 +113,8 @@ class profile::confluence {
     }
 
     # export the nginx vhost
-    $nginx_configuration.each |$resource, $options| {
-      @@nginx::resource::vhost { $resource:
-        * =>  $_nginx_customization + $nginx_configuration
-    }
+    create_resources('@@nginx::resource::vhost', $nginx_configuration,
+      $_nginx_customization)
   }
 
   # Database setup
