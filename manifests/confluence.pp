@@ -22,11 +22,13 @@ class profile::confluence {
   $mysql_java_connector_install_dir = $::mysql_java_connector::installdir
 
   # lint:ignore:80chars
+  # lint:ignore:140chars
   file { "/opt/confluence/atlassian-confluence-${confluence_version}/confluence/WEB-INF/lib/mysql-connector-java-${mysql_java_connector_version}-bin.jar":
     ensure => file,
     source => "${mysql_java_connector_install_dir}/mysql-connector-java-${mysql_java_connector_version}/mysql-connector-java-${mysql_java_connector_version}-bin.jar",
     notify => Service['confluence'],
   }
+  # lint:endignore
   # lint:endignore
 
   $confluence_port = hiera('confluence::tomcat_port', '8090')
@@ -115,7 +117,7 @@ class profile::confluence {
     # export the nginx vhost
     $nginx_configuration.each |$resource, $options| {
       @@nginx::resource::vhost { $resource:
-        * =>  $_nginx_customization + $nginx_configuration
+        * => $_nginx_customization + $nginx_configuration,
       }
     }
   }
@@ -143,14 +145,14 @@ class profile::confluence {
 
     # Create extra DB exports / mappings if needed
     if (has_key($db_settings, 'extra_db_hosts')) {
-      validate_hash($db_settings['extra_db_hosts'])
+      validate_array($db_settings['extra_db_hosts'])
 
       each($db_settings['extra_db_hosts']) |$conn_host| {
         @@mysql::db { "${db_settings['database']}_${::fqdn}_${conn_host}":
           user     => $db_settings['username'],
           password => $db_settings['password'],
           dbname   => $db_settings['database'],
-          host     => $::ipaddress,
+          host     => $conn_host,
           grant    => [ 'ALL' ],
           collate  => 'utf8_bin',
           tag      => $db_settings['db_tag'],
