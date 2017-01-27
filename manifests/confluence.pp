@@ -116,6 +116,7 @@ class profile::confluence {
     $nginx_configuration.each |$resource, $options| {
       @@nginx::resource::vhost { $resource:
         * =>  $_nginx_customization + $nginx_configuration
+      }
     }
   }
 
