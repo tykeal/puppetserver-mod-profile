@@ -119,15 +119,16 @@ class profile::confluence {
     # Version 6.x adds a new pass through that needs to be created
     if (versioncmp($confluence_version, '6.0.0') >= 0) {
       @@nginx::resource::location { "confluence-${confluence_sitename}-synchrony":
-        ensure           => present,
-        ssl              => $_ssl,
-        ssl_only         => $_ssl,
-        vhost            => "confluence-${confluence_sitename}",
-        location         => '/synchrony',
-        autoindex        => 'off',
-        proxy            => "http://${::fqdn}:8091/synchrony",
-        tag              => $nginx_export,
-        proxy_set_header => [
+        ensure             => present,
+        ssl                => $_ssl,
+        ssl_only           => $_ssl,
+        vhost              => "confluence-${confluence_sitename}",
+        location           => '/synchrony',
+        autoindex          => 'off',
+        proxy              => "http://${::fqdn}:8091/synchrony",
+        tag                => $nginx_export,
+        proxy_http_version => '1.1',
+        proxy_set_header   => [
             'Host $host',
             'X-Real-IP $remote_addr',
             'X-Forwarded-For $proxy_add_x_forwarded_for',
