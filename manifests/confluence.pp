@@ -115,6 +115,30 @@ class profile::confluence {
     # export the nginx vhost
     create_resources('@@nginx::resource::vhost', $nginx_configuration,
       $_nginx_customization)
+
+    # Version 6.x adds a new pass through that needs to be created
+    if (versioncmp($confluence_version, '6.0.0' >= 0)) {
+      @@nginx::resource::location { "confluence-${confluence_sitename}-synchrony":
+        ensure           => present,
+        ssl              => $_ssl,
+        ssl_only         => $_ssl,
+        vhost            => "confluence-${confluence_sitename}",
+        location         => '/synchrony',
+        autoindex        => 'off',
+        proxy            => "http://${::fqdn}:8091/synchrony",
+        tag              => $nginx_export,
+        proxy_set_header => [
+            'Host $host',
+            'X-Real-IP $remote_addr',
+            'X-Forwarded-For $proxy_add_x_forwarded_for',
+            'X-Forwarded-Proto $scheme',
+            'X-Forwarded-Port $server_port',
+            'Accept-Encoding ""',
+            'Upgrade $http_upgrade',
+            'Connection "upgrade"',
+          ],
+      }
+    }
   }
 
   # Database setup
@@ -162,5 +186,17 @@ class profile::confluence {
     dport    => $confluence_port,
     state    => ['NEW'],
     action   => accept,
+  }
+
+  # Version 6.x+ of Confluence has an extra port needed open
+  if (versioncmp($confluence_version, '6.0.0') >= 0) {
+    ::profile::firewall::rule { 'accept incoming confluence synchrony traffic':
+      priority => '500',
+      proto    => 'tcp',
+      # hard code the port as the confluence module can't manage it (at present)
+      dport    => 8091,
+      state    => ['NEW'],
+      action   => accept,
+    }
   }
 }
