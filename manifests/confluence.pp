@@ -117,7 +117,7 @@ class profile::confluence {
       $_nginx_customization)
 
     # Version 6.x adds a new pass through that needs to be created
-    if (versioncmp($confluence_version, '6.0.0' >= 0)) {
+    if (versioncmp($confluence_version, '6.0.0') >= 0) {
       @@nginx::resource::location { "confluence-${confluence_sitename}-synchrony":
         ensure           => present,
         ssl              => $_ssl,
