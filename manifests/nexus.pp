@@ -198,6 +198,7 @@ class profile::nexus {
     @@nginx::resource::vhost { "nginx_nexus-docker-${nexus_sitename}-${docker_port}":
       ensure           => present,
       server_name      => [[$nexus_sitename,],],
+      listen_port      => $docker_port,
       access_log       => "/var/log/nexus-${nexus_sitename}-${docker_port}_access.log",
       error_log        => "/var/log/nexus-${nexus_sitename}-${docker_port}_error.log",
       proxy            => "http://${::fqdn}:${docker_port}",
