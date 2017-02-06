@@ -21,6 +21,23 @@ class profile::nexus {
     'dpkg-devel',
   ])
 
+  # Nexus needs a special directory for setting lock files as well as
+  # for where it stores the license information if it's a pro setup
+  include ::nexus::params
+
+  $nexus_root = hiera('nexus::nexus_root', $::nexus::params::nexus_root)
+  $nexus_user = hiera('nexus::nexus_user', $::nexus::params::nexus_user)
+  $nexus_group = hiera('nexus::nexus_group', $::nexus::params::nexus_group)
+
+  # Make sure that the $nexus_root/.java directory exists and is owned by
+  # Nexus. Nexus should be able to handle the rest of the setup
+  file { "${nexus_root}/.java":
+    ensure => directory,
+    owner  => $nexus_user,
+    group  => $nexus_group,
+    mode   => '0770',
+  }
+
   # The apt repo plugin for nexus is seriously flawed, or at least not working
   # correctly all the time. So, let's get a temporary solution put in place for
   # generating the repos for use with cron
@@ -90,10 +107,20 @@ class profile::nexus {
 
   if ($nexus_context != '/') {
     $vhost_cfg_prepend = {
-      'rewrite' => "^/$ ${nexus_context} permanent",
+      'rewrite'            => "^/$ ${nexus_context} permanent",
+      'proxy_send_timeout' => '120',
+      'proxy_buffering'    => 'off',
+      'keepalive_timeout'  => '5 5',
+      'tcp_nodelay'        => 'on',
     }
     $add_nginx_location = true
   } else {
+    $vhost_cfg_prepend = {
+      'proxy_send_timeout' => '120',
+      'proxy_buffering'    => 'off',
+      'keepalive_timeout'  => '5 5',
+      'tcp_nodelay'        => 'on',
+    }
     $add_nginx_location = false
   }
 
@@ -104,6 +131,9 @@ class profile::nexus {
   # Yes the hiera to internal variable doesn't match up, it's done on
   # purpose ;)
   $nginx_uploadlimit = hiera('nexus::upload_limit', '512m')
+
+  # default hsts to 180 days (SSLLabs recommended)
+  $hsts_age = hiera('nginx::max-age', '15552000')
 
   # It's possible that we may end up needing to handle special case rewrite
   # rules. It would be great if we didn't have to, but such is life
@@ -140,15 +170,16 @@ class profile::nexus {
 
   if ($add_nginx_location) {
     @@nginx::resource::location { "nginx_nexus-${nexus_sitename}-context":
-      ensure    => present,
-      ssl       => true,
-      ssl_only  => true,
-      vhost     => "nginx_nexus-${nexus_sitename}",
-      location  => $nexus_context,
-      autoindex => 'off',
-      priority  => 501,
-      proxy     => "http://${::fqdn}:${nexus_port}",
-      tag       => $nginx_export,
+      ensure             => present,
+      ssl                => true,
+      ssl_only           => true,
+      vhost              => "nginx_nexus-${nexus_sitename}",
+      location           => $nexus_context,
+      autoindex          => 'off',
+      priority           => 501,
+      proxy              => "http://${::fqdn}:${nexus_port}",
+      proxy_read_timeout => '300',
+      tag                => $nginx_export,
     }
   }
 
@@ -157,9 +188,9 @@ class profile::nexus {
     default => "${nexus_context}/content",
   }
 
-  $staging_location = $nexus_context ? {
-    '/'     => '/service/local/staging',
-    default => "${nexus_context}/service/local/staging",
+  $service_location = $nexus_context ? {
+    '/'     => '/service/local',
+    default => "${nexus_context}/service/local",
   }
 
   $increase_upload = {
@@ -175,19 +206,21 @@ class profile::nexus {
     autoindex           => 'off',
     priority            => 502,
     proxy               => "http://${::fqdn}:${nexus_port}",
+    proxy_read_timeout  => '300',
     location_cfg_append => $increase_upload,
     tag                 => $nginx_export,
   }
 
-  @@nginx::resource::location { "nginx_nexus_${nexus_sitename}-staging":
+  @@nginx::resource::location { "nginx_nexus_${nexus_sitename}-service":
     ensure              => present,
     ssl                 => $_ssl,
     ssl_only            => $_ssl,
     vhost               => "nginx_nexus-${nexus_sitename}",
-    location            => $staging_location,
+    location            => $service_location,
     autoindex           => 'off',
     priority            => 502,
     proxy               => "http://${::fqdn}:${nexus_port}",
+    proxy_read_timeout  => '300',
     location_cfg_append => $increase_upload,
     tag                 => $nginx_export,
   }
