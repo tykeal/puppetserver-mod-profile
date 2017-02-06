@@ -109,6 +109,16 @@ class profile::nexus {
   # rules. It would be great if we didn't have to, but such is life
   $nginx_rewrite_rules = hiera('nginx::rewrite_rules', [])
 
+  # setup the proxy headers
+  $proxy_set_header = [
+    'Host $host',
+    'X-Real-IP $remote_addr',
+    'X-Forwarded-For $proxy_add_x_forwarded_for',
+    'X-Forwarded-Proto $scheme',
+    'X-Forwarded-Port $server_port',
+    'Accept-Encoding ""',
+  ]
+
   # Export the Nexus vhost
   @@nginx::resource::vhost { "nginx_nexus-${nexus_sitename}":
     ensure            => present,
@@ -116,14 +126,7 @@ class profile::nexus {
     access_log        => "/var/log/nginx/nexus-${nexus_sitename}_access.log",
     error_log         => "/var/log/nginx/nexus-${nexus_sitename}_error.log",
     proxy             => "http://${::fqdn}:${nexus_port}",
-    proxy_set_header  => [
-      'Host $host',
-      'X-Real-IP $remote_addr',
-      'X-Forwarded-For $proxy_add_x_forwarded_for',
-      'X-Forwarded-Proto $scheme',
-      'X-Forwarded-Port $server_port',
-      'Accept-Encoding ""',
-    ],
+    proxy_set_header  => $proxy_set_header,
     ssl               => $_ssl,
     rewrite_to_https  => $_ssl,
     ssl_cert          => $_ssl_cert,
@@ -189,6 +192,34 @@ class profile::nexus {
     tag                 => $nginx_export,
   }
 
+  # hosted docker registries have to run on their own ports
+  $docker_ports = hiera_array('nexus::docker_ports', [])
+  $docker_ports.each |String $docker_port| {
+    @@nginx::resource::vhost { "nginx_nexus-docker-${nexus_sitename}-${docker_port}":
+      ensure           => present,
+      server_name      => [[$nexus_sitename,],],
+      access_log       => "/var/log/nexus-${nexus_sitename}-${docker_port}_access.log",
+      error_log        => "/var/log/nexus-${nexus_sitename}-${docker_port}_error.log",
+      proxy            => "http://${::fqdn}:${docker_port}",
+      proxy_set_header => $proxy_set_header,
+      ssl              => $_ssl,
+      rewrite_to_https => $_ssl,
+      ssl_cert         => $_ssl_cert,
+      ssl_key          => $_ssl_key,
+      ssl_dhparam      => $_ssl_dhparam,
+      tag              => $nginx_export,
+      add_header       => $_add_header,
+    }
+
+    ::profile::firewall::rule { "Nexus docker port ${docker_port}":
+      priority => '050',
+      proto    => 'tcp',
+      dport    => $docker_port,
+      state    => ['NEW'],
+      action   => 'accept',
+    }
+  }
+
   # Monitoring
   include ::nagios::params
   $nagios_plugin_dir = hiera('nagios_plugin_dir')
@@ -196,7 +227,7 @@ class profile::nexus {
   $nagios_tag = hiera('nagios::client::nagiostag', '')
   $defaultserviceconfig = hiera('nagios::client::defaultserviceconfig',
     $::nagios::params::defaultserviceconfig)
-  
+
   ::nagios::resource { "HTTP - Nexus - ${nexus_sitename}":
     resource_type      => 'service',
     defaultresourcedef => $defaultserviceconfig,
