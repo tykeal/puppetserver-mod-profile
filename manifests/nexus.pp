@@ -132,9 +132,6 @@ class profile::nexus {
   # purpose ;)
   $nginx_uploadlimit = hiera('nexus::upload_limit', '512m')
 
-  # default hsts to 180 days (SSLLabs recommended)
-  $hsts_age = hiera('nginx::max-age', '15552000')
-
   # It's possible that we may end up needing to handle special case rewrite
   # rules. It would be great if we didn't have to, but such is life
   $nginx_rewrite_rules = hiera('nginx::rewrite_rules', [])
@@ -151,21 +148,25 @@ class profile::nexus {
 
   # Export the Nexus vhost
   @@nginx::resource::vhost { "nginx_nexus-${nexus_sitename}":
-    ensure            => present,
-    server_name       => [[$nexus_sitename,],],
-    access_log        => "/var/log/nginx/nexus-${nexus_sitename}_access.log",
-    error_log         => "/var/log/nginx/nexus-${nexus_sitename}_error.log",
-    proxy             => "http://${::fqdn}:${nexus_port}",
-    proxy_set_header  => $proxy_set_header,
-    ssl               => $_ssl,
-    rewrite_to_https  => $_ssl,
-    ssl_cert          => $_ssl_cert,
-    ssl_key           => $_ssl_key,
-    ssl_dhparam       => $_ssl_dhparam,
-    tag               => $nginx_export,
-    vhost_cfg_prepend => $vhost_cfg_prepend,
-    rewrite_rules     => $nginx_rewrite_rules,
-    add_header        => $_add_header,
+    ensure              => present,
+    server_name         => [[$nexus_sitename,],],
+    access_log          => "/var/log/nginx/nexus-${nexus_sitename}_access.log",
+    error_log           => "/var/log/nginx/nexus-${nexus_sitename}_error.log",
+    # flag ipv6 as enabled. This will enable if it is possible on the nginx host
+    # side
+    ipv6_enable         => true,
+    ipv6_listen_options => '',
+    proxy               => "http://${::fqdn}:${nexus_port}",
+    proxy_set_header    => $proxy_set_header,
+    ssl                 => $_ssl,
+    rewrite_to_https    => $_ssl,
+    ssl_cert            => $_ssl_cert,
+    ssl_key             => $_ssl_key,
+    ssl_dhparam         => $_ssl_dhparam,
+    tag                 => $nginx_export,
+    vhost_cfg_prepend   => $vhost_cfg_prepend,
+    rewrite_rules       => $nginx_rewrite_rules,
+    add_header          => $_add_header,
   }
 
   if ($add_nginx_location) {
@@ -229,20 +230,27 @@ class profile::nexus {
   $docker_ports = hiera_array('nexus::docker_ports', [])
   $docker_ports.each |String $docker_port| {
     @@nginx::resource::vhost { "nginx_nexus-docker-${nexus_sitename}-${docker_port}":
-      ensure           => present,
-      server_name      => [[$nexus_sitename,],],
-      listen_port      => $docker_port,
-      access_log       => "/var/log/nexus-${nexus_sitename}-${docker_port}_access.log",
-      error_log        => "/var/log/nexus-${nexus_sitename}-${docker_port}_error.log",
-      proxy            => "http://${::fqdn}:${docker_port}",
-      proxy_set_header => $proxy_set_header,
-      ssl              => $_ssl,
-      rewrite_to_https => $_ssl,
-      ssl_cert         => $_ssl_cert,
-      ssl_key          => $_ssl_key,
-      ssl_dhparam      => $_ssl_dhparam,
-      tag              => $nginx_export,
-      add_header       => $_add_header,
+      ensure              => present,
+      server_name         => [[$nexus_sitename,],],
+      listen_port         => $docker_port,
+      # if we have certs then we need to force the ssl port setting both to the
+      # same will cause it to only server on SSL
+      ssl_port            => $docker_port,
+      access_log          => "/var/log/nexus-${nexus_sitename}-${docker_port}_access.log",
+      error_log           => "/var/log/nexus-${nexus_sitename}-${docker_port}_error.log",
+      # flag ipv6 as enabled. This will enable if it is possible on the nginx host
+      # side
+      ipv6_enable         => true,
+      ipv6_listen_options => '',
+      proxy               => "http://${::fqdn}:${docker_port}",
+      proxy_set_header    => $proxy_set_header,
+      ssl                 => $_ssl,
+      rewrite_to_https    => $_ssl,
+      ssl_cert            => $_ssl_cert,
+      ssl_key             => $_ssl_key,
+      ssl_dhparam         => $_ssl_dhparam,
+      tag                 => $nginx_export,
+      add_header          => $_add_header,
     }
 
     ::profile::firewall::rule { "Nexus docker port ${docker_port}":
