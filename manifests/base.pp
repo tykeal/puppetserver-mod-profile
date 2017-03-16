@@ -6,6 +6,7 @@ class profile::base {
   include ::profile::external_facts
   include ::profile::firewall
   include ::profile::hardware
+  include ::profile::haveged
   include ::profile::hosts
   include ::profile::network
   include ::profile::nagios::client
