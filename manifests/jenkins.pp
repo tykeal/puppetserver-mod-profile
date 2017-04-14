@@ -73,7 +73,11 @@ class profile::jenkins {
     } else {
       $vhost_cfg_prepend = {
         'proxy_buffering' => 'off',
-        'rewrite' => "^/$ ${jenkins_prefix} permanent",
+        'rewrite'         => [
+          "^/$ ${jenkins_prefix} permanent",
+          'configfiles/show / permanent',
+        ],
+        #'rewrite'        => "^/$ ${jenkins_prefix} permanent",
       }
     }
   } else {
