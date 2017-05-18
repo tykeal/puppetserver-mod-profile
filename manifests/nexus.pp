@@ -49,11 +49,6 @@ class profile::nexus {
     source => "puppet:///modules/${module_name}/nexus/buildapt.sh",
   }
 
-  # Force nexus service to use old redhat service provider
-  Service <| tag == 'nexus::service' |> {
-    provider => 'redhat',
-  }
-
   $nexus_port = hiera('nexus::nexus_port', 8081)
   validate_integer($nexus_port)
 
