@@ -1,7 +1,10 @@
+# jira configuration
 class profile::jira {
   # Jira requires java to be installed
   include ::profile::java
   include ::jira
+  # Enable jira facts so that upgrades can be performed via puppet
+  include ::jira::facts
 
   # Since we use MySQL in general in our environments we'll just assume
   # we're doing MySQL for now
@@ -28,29 +31,48 @@ class profile::jira {
     tag      => $jira_dbtag,
   }
 
+  # Extra db hosts if needed
+  $extra_db_hosts = hiera('jira::extra_hosts', undef)
+  if ($extra_db_hosts) {
+    validate_array($extra_db_hosts)
+
+    # Create extra database exports / mappings
+    each($extra_db_hosts) |$conn_host| {
+      @@mysql::db { "${jira_dbname}_${::fqdn}_${conn_host}":
+        user     => $jira_dbuser,
+        password => $jira_dbpassword,
+        dbname   => $jira_dbname,
+        host     => $conn_host,
+        grant    => [ 'ALL' ],
+        collate  => 'utf8_bin',
+        tag      => $jira_dbtag,
+      }
+    }
+  }
+
   Class['::java'] -> Class['::jira']
 
   # configure the firewall
-  $jira_tomcatPort = hiera('jira::tomcatPort', 8080)
-  validate_integer($jira_tomcatPort)
+  $jira_tomcat_port = hiera('jira::tomcatPort', 8080)
+  validate_integer($jira_tomcat_port)
 
   firewall { '050 accept jira traffic':
     proto  => 'tcp',
-    dport  => $jira_tomcatPort,
+    dport  => $jira_tomcat_port,
     state  => ['NEW'],
     action => accept,
   }
 
-  $jira_nativeSSL = hiera('jira::tomcatNativeSsl', false)
-  validate_bool($jira_nativeSSL)
+  $jira_native_ssl = hiera('jira::tomcatNativeSsl', false)
+  validate_bool($jira_native_ssl)
 
-  if ($jira_nativeSSL) {
-    $jira_tomcatHttpsPort = hiera('jira::tomcatHttpsPort', 8443)
-    validate_integer($jira_tomcatHttpsPort)
+  if ($jira_native_ssl) {
+    $jira_tomcat_https_port = hiera('jira::tomcatHttpsPort', 8443)
+    validate_integer($jira_tomcat_https_port)
 
     firewall { '050 accept jira HTTPS traffic':
       proto  => 'tcp',
-      dport  => $jira_tomcatHttpsPort,
+      dport  => $jira_tomcat_https_port,
       state  => ['NEW'],
       action => accept,
     }
@@ -62,9 +84,32 @@ class profile::jira {
   {
     validate_string($nginx_export)
 
-    $ssl_cert_name = hiera('nginx::ssl_cert_name')
-    $ssl_cert_chain = hiera('nginx::ssl_cert_chain')
-    $ssl_dhparam = hiera('nginx::ssl_dhparam')
+    # default hsts to 180 days (SSLLabs recommended)
+    $hsts_age = hiera('nginx::max-age', '15552000')
+
+    $ssl_cert_name = hiera('nginx::ssl_cert_name', undef)
+    $ssl_cert_chain = hiera('nginx::ssl_cert_chain', undef)
+    $ssl_dhparam = hiera('nginx::ssl_dhparam', undef)
+
+    if ($ssl_cert_name and $ssl_cert_chain) {
+      $_ssl_cert = "/etc/pki/tls/certs/${ssl_cert_name}-${ssl_cert_chain}.pem"
+      $_ssl_key = "/etc/pki/tls/private/${ssl_cert_name}.pem"
+      $_ssl = true
+      $_add_header = {
+        'Strict-Transport-Security' => "max-age=${hsts_age}",
+      }
+    } else {
+      $_ssl_cert = undef
+      $_ssl_key = undef
+      $_ssl = false
+      $_add_header = undef
+    }
+
+    if ($ssl_dhparam) {
+      $_ssl_dhparam = "/etc/pki/tls/certs/${ssl_dhparam}.pem"
+    } else {
+      $_ssl_dhparam = undef
+    }
 
     $jira_proxy = hiera('jira::proxy')
     validate_hash($jira_proxy)
@@ -80,13 +125,11 @@ class profile::jira {
       autoindex          => 'off',
       proxy              => "http://${::fqdn}:${jira_tomcatPort}",
       proxy_read_timeout => '300',
-      rewrite_to_https   => true,
-      ssl                => true,
-      # lint:ignore:80chars
-      ssl_cert           => "/etc/pki/tls/certs/${ssl_cert_name}-${ssl_cert_chain}.pem",
-      # lint:endignore
-      ssl_key            => "/etc/pki/tls/private/${ssl_cert_name}.pem",
-      ssl_dhparam        => "/etc/pki/tls/certs/${ssl_dhparam}.pem",
+      rewrite_to_https   => $_ssl,
+      ssl                => $_ssl,
+      ssl_cert           => $_ssl_cert,
+      ssl_key            => $_ssl_key,
+      ssl_dhparam        => $_ssl_dhparam,
       tag                => $nginx_export,
       add_header         => {
         'proxy_redirect' => 'off',
