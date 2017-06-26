@@ -123,7 +123,7 @@ class profile::jira {
       access_log         => "/var/log/nginx/jira-${jira_sitename}_access.log",
       error_log          => "/var/log/nginx/jira-${jira_sitename}_error.log",
       autoindex          => 'off',
-      proxy              => "http://${::fqdn}:${jira_tomcatPort}",
+      proxy              => "http://${::fqdn}:${jira_tomcat_port}",
       proxy_read_timeout => '300',
       rewrite_to_https   => $_ssl,
       ssl                => $_ssl,
