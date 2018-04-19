@@ -95,7 +95,7 @@ class profile::clm {
       ssl_key             => $_ssl_key,
       ssl_dhparam         => $_ssl_dhparam,
       autoindex           => 'off',
-      vhost_cfg_prepend   => $vhost_cfg_prepend
+      vhost_cfg_prepend   => $vhost_cfg_prepend,
       proxy               => "http://${::fqdn}:${clm_port}",
       # Sonatype suggests setting at least 600 timeout for CLM
       proxy_read_timeout  => '600',
