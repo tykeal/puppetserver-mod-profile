@@ -228,22 +228,8 @@ class profile::jenkins {
     require => File["${groovy_loc}/.ssh"],
   }
 
-  $jenkins_auth = hiera('jenkins::auth')
-  validate_string($jenkins_auth)
-
-  # load in the needed hiera config for doing the auth setup
-  case $jenkins_auth {
-    'ldap':   {
-                $jenkins_ldap = hiera('jenkins::ldap')
-                validate_hash($jenkins_ldap)
-              }
-    default: { fail('Unknown jenkins::auth type') }
-  }
-
-  # for the present we will assume that all jenkins systems will use
-  # the matrix authorization strategy
-  $jenkins_matrix = hiera('jenkins::matrixstrategy')
-  validate_hash($jenkins_matrix)
+  $use_casc = hiera('jenkins::use_casc', false)
+  validate_boolean($use_casc)
 
   # get the ssh auth setup script in place
   file { "${groovy_loc}/set_jenkins_admin_ssh.groovy":
@@ -253,12 +239,73 @@ class profile::jenkins {
     source => "puppet:///modules/${module_name}/jenkins/set_jenkins_admin_ssh.groovy",
   }
 
-  # put the auth setup groovy script down on system
-  file { "${groovy_loc}/set_${jenkins_auth}_auth.groovy":
-    ensure  => file,
-    owner   => 'jenkins',
-    group   => 'jenkins',
-    content => template("${module_name}/jenkins/set_${jenkins_auth}_auth.groovy.erb"),
+  if ($use_casc) {
+    $casc_dir = hiera('jenkins::casc_dir', '/var/lib/jenkins/casc.d/')
+    validate_string($casc_dir)
+
+    # configure puppet managed CasC directory
+    # purge everything below that isn't managed by puppet except the
+    # community managed files (see next block)
+    file { $casc_dir:
+      ensure  => directory,
+      owner   => 'jenkins',
+      group   => 'jenkins',
+      mode    => '0700',
+      purge   => true,
+      recurse => true,
+    }
+
+    # Community managed CasC files have to live in a directory under the main
+    # one, it can't be a symlink. Since these files are going to not be part
+    # of puppet, we need to make sure that they don't get purged.
+    file { "${casc_dir}/community.d":
+      ensure  => directory,
+      owner   => 'jenkins',
+      group   => 'jenkins',
+      mode    => '0700',
+      purge   => false,
+      recurse => true,
+    }
+
+    # load the casc configuration
+    $jenkins_casc = hiera('jenkins::casc', {})
+    validate_hash($jenkins_casc)
+
+    $casc_file_settings = {
+      header => '# THIS FILE MANAGED BY PUPPET',
+    }
+
+    file { "${casc_dir}/jenkins.yaml":
+      ensure  => present,
+      owner   => 'jenkins',
+      group   => 'jenkins',
+      content => hash2yaml($casc_file_settings, $jenkins_casc),
+    }
+  } else {
+    $jenkins_auth = hiera('jenkins::auth')
+    validate_string($jenkins_auth)
+
+    # load in the needed hiera config for doing the auth setup
+    case $jenkins_auth {
+      'ldap':   {
+                  $jenkins_ldap = hiera('jenkins::ldap')
+                  validate_hash($jenkins_ldap)
+                }
+      default: { fail('Unknown jenkins::auth type') }
+    }
+
+    # for the present we will assume that all jenkins systems will use
+    # the matrix authorization strategy
+    $jenkins_matrix = hiera('jenkins::matrixstrategy')
+    validate_hash($jenkins_matrix)
+
+    # put the auth setup groovy script down on system
+    file { "${groovy_loc}/set_${jenkins_auth}_auth.groovy":
+      ensure  => file,
+      owner   => 'jenkins',
+      group   => 'jenkins',
+      content => template("${module_name}/jenkins/set_${jenkins_auth}_auth.groovy.erb"),
+    }
   }
 
   # our administrative credentials for jenkins (used after we've run
@@ -289,19 +336,21 @@ class profile::jenkins {
                       ],
     }
 
-    profile::jenkins::run_groovy { "set_${jenkins_auth}_auth":
-      use_auth   => false,
-      url_prefix => $url_prefix,
-      require    => [
-                      File["${groovy_loc}/set_${jenkins_auth}_auth.groovy"],
-                      Profile::Jenkins::Run_groovy['set_jenkins_admin_ssh'],
-                    ],
-    }
+    if (! $use_casc) {
+      profile::jenkins::run_groovy { "set_${jenkins_auth}_auth":
+        use_auth   => false,
+        url_prefix => $url_prefix,
+        require    => [
+                        File["${groovy_loc}/set_${jenkins_auth}_auth.groovy"],
+                        Profile::Jenkins::Run_groovy['set_jenkins_admin_ssh'],
+                      ],
+      }
 
-    # flag that we need auth from now on but only after our auth setting
-    # has been done
-    external_facts::fact { 'jenkins_auth_needed':
-      require => Profile::Jenkins::Run_groovy["set_${jenkins_auth}_auth"],
+      # flag that we need auth from now on but only after our auth setting
+      # has been done
+      external_facts::fact { 'jenkins_auth_needed':
+        require => Profile::Jenkins::Run_groovy["set_${jenkins_auth}_auth"],
+      }
     }
   }
   else {
