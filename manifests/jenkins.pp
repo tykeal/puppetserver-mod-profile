@@ -280,7 +280,7 @@ class profile::jenkins {
 
     # load the security configuration (which we keep separate)
     $jenkins_casc_securityrealm = hiera('jenkins::casc_securityrealm', {})
-    validate_has($jenkins_casc_securityrealm)
+    validate_hash($jenkins_casc_securityrealm)
 
     file { "${casc_dir}/securityrealm.yaml":
       ensure  => present,
