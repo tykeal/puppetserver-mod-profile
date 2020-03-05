@@ -268,8 +268,12 @@ class profile::jenkins {
     }
 
     # load the casc configuration
-    $jenkins_casc = hiera('jenkins::casc', {})
-    validate_hash($jenkins_casc)
+    $casc_jenkins_defaults = hiera('jenkins::casc_jenkins_defaults', {})
+    validate_hash($casc_jenkins_defaults)
+    $casc_jenkins = hiera('jenkins::casc_jenkins', {})
+    validate_hash($casc_jenkins)
+    # merge defaults and overrides
+    $jenkins_casc = $casc_jenkins_defaults + $casc_jenkins
 
     if ( !empty($jenkins_casc) ) {
       each(keys($jenkins_casc)) |$casc_key| {
