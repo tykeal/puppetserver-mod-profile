@@ -277,7 +277,7 @@ class profile::jenkins {
           ensure  => present,
           owner   => 'jenkins',
           group   => 'jenkins',
-          content => hash2yaml({jenkins=>$casc_key})
+          content => hash2yaml({jenkins=>$jenkins_casc[$casc_key]})
         }
       }
     }
