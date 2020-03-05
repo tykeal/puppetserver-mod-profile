@@ -277,32 +277,52 @@ class profile::jenkins {
 
     if ( !empty($jenkins_casc) ) {
       each(keys($jenkins_casc)) |$casc_key| {
-        file { "${casc_dir}/${casc_key}.yaml":
+        file { "${casc_dir}/jenkins_${casc_key}.yaml":
           ensure  => present,
           owner   => 'jenkins',
           group   => 'jenkins',
-          content => hash2yaml({jenkins=>{$casc_key=>$jenkins_casc[$casc_key]}})
+          content => hash2yaml({jenkins=>{$casc_key=>$jenkins_casc[$casc_key]}}),
         }
       }
     }
 
-    #file { "${casc_dir}/jenkins.yaml":
-    #  ensure  => present,
-    #  owner   => 'jenkins',
-    #  group   => 'jenkins',
-    #  content => hash2yaml($casc),
-    #}
+    # load the casc security configuration
+    $casc_security_defaults = hiera('jenkins::casc_security_defaults', {})
+    validate_hash($casc_security_defaults)
+    $casc_security = hiera('jenkins::casc_security', {})
+    validate_hash($casc_security)
+    # merge defaults and overrides
+    $security_casc = $casc_security_defaults + $casc_security
 
-    # load the security configuration (which we keep separate)
-    $jenkins_casc_securityrealm = hiera('jenkins::casc_securityrealm', {})
-    validate_hash($jenkins_casc_securityrealm)
-
-    file { "${casc_dir}/securityrealm.yaml":
-      ensure  => present,
-      owner   => 'jenkins',
-      group   => 'jenkins',
-      content => hash2yaml($jenkins_casc_securityrealm),
+    if ( !empty($security_casc) ) {
+      each(keys($security_casc)) |$casc_key| {
+        file { "${casc_dir}/security_${casc_key}.yaml":
+          ensure  => present,
+          owner   => 'jenkins',
+          group   => 'jenkins',
+          content => hash2yaml({security=>{$casc_key=>$security_casc[$casc_key]}}),
+        }
+      }
     }
+
+    # load the casc unclassified configuration
+    $casc_unclassified_defaults = lookup('jenkins::casc_unclassified_defaults', Hash, {})
+    $casc_unclassified = lookup('jenkins::casc_unclassified', Hash, {})
+    $unclassified_casc = $casc_unclassified_defaults + $casc_unclassified
+    #$casc_unclassified_defaults = hiera('jenkins::casc_unclassified_defaults', {})
+
+    if ( !empty($unclassified_casc) ) {
+      each(keys($unclassified_casc)) |$casc_key| {
+        file { "${casc_dir}/unclassified_${casc_key}.yaml":
+          ensure  => present,
+          owner   => 'jenkins',
+          group   => 'jenkins',
+          content => hash2yaml({unclassified=>{casc_key=>$unclassified_casc[$casc_key]}}),
+        }
+      }
+    }
+
+
   } else {
     $jenkins_auth = hiera('jenkins::auth')
     validate_string($jenkins_auth)
