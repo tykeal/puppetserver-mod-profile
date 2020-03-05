@@ -270,6 +270,7 @@ class profile::jenkins {
     # load the casc configuration
     $jenkins_casc = hiera('jenkins::casc', {})
     validate_hash($jenkins_casc)
+    notify($jenkins_casc)
 
     $casc_file_settings = {
       header => '# THIS FILE MANAGED BY PUPPET',
@@ -279,7 +280,7 @@ class profile::jenkins {
       ensure  => present,
       owner   => 'jenkins',
       group   => 'jenkins',
-      content => hash2yaml({}, $jenkins_casc),
+      content => hash2yaml($jenkins_casc),
     }
   } else {
     $jenkins_auth = hiera('jenkins::auth')
