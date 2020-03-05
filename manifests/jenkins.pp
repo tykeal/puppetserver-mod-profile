@@ -228,8 +228,7 @@ class profile::jenkins {
     require => File["${groovy_loc}/.ssh"],
   }
 
-  $use_casc = hiera('jenkins::use_casc', false)
-  validate_bool($use_casc)
+  $use_casc = lookup('jenkins::use_casc', Boolean, 'first', false)
 
   # get the ssh auth setup script in place
   file { "${groovy_loc}/set_jenkins_admin_ssh.groovy":
@@ -240,8 +239,7 @@ class profile::jenkins {
   }
 
   if ($use_casc) {
-    $casc_dir = hiera('jenkins::casc_dir', '/var/lib/jenkins/casc.d/')
-    validate_string($casc_dir)
+    $casc_dir = lookup('jenkins::casc_dir', String, 'first', '/var/lib/jenkins/casc.d/')
 
     # configure puppet managed CasC directory
     # purge everything below that isn't managed by puppet except the
@@ -268,10 +266,8 @@ class profile::jenkins {
     }
 
     # load the casc configuration
-    $casc_jenkins_defaults = hiera('jenkins::casc_jenkins_defaults', {})
-    validate_hash($casc_jenkins_defaults)
-    $casc_jenkins = hiera('jenkins::casc_jenkins', {})
-    validate_hash($casc_jenkins)
+    $casc_jenkins_defaults = lookup('jenkins::casc_jenkins_defaults', Hash, 'first', {})
+    $casc_jenkins = lookup('jenkins::casc_jenkins', Hash, 'first', {})
     # merge defaults and overrides
     $jenkins_casc = $casc_jenkins_defaults + $casc_jenkins
 
@@ -287,10 +283,8 @@ class profile::jenkins {
     }
 
     # load the casc security configuration
-    $casc_security_defaults = hiera('jenkins::casc_security_defaults', {})
-    validate_hash($casc_security_defaults)
-    $casc_security = hiera('jenkins::casc_security', {})
-    validate_hash($casc_security)
+    $casc_security_defaults = lookup('jenkins::casc_security_defaults', Hash, 'first', {})
+    $casc_security = lookup('jenkins::casc_security', Hash, 'first', {})
     # merge defaults and overrides
     $security_casc = $casc_security_defaults + $casc_security
 
@@ -308,8 +302,8 @@ class profile::jenkins {
     # load the casc unclassified configuration
     $casc_unclassified_defaults = lookup('jenkins::casc_unclassified_defaults', Hash, 'first', {})
     $casc_unclassified = lookup('jenkins::casc_unclassified', Hash, 'first', {})
+    # merge defaults and overrides
     $unclassified_casc = $casc_unclassified_defaults + $casc_unclassified
-    #$casc_unclassified_defaults = hiera('jenkins::casc_unclassified_defaults', {})
 
     if ( !empty($unclassified_casc) ) {
       each(keys($unclassified_casc)) |$casc_key| {
