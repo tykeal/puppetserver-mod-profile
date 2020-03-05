@@ -306,8 +306,8 @@ class profile::jenkins {
     }
 
     # load the casc unclassified configuration
-    $casc_unclassified_defaults = lookup('jenkins::casc_unclassified_defaults', Hash, {})
-    $casc_unclassified = lookup('jenkins::casc_unclassified', Hash, {})
+    $casc_unclassified_defaults = lookup('jenkins::casc_unclassified_defaults', Hash,, {})
+    $casc_unclassified = lookup('jenkins::casc_unclassified', Hash,, {})
     $unclassified_casc = $casc_unclassified_defaults + $casc_unclassified
     #$casc_unclassified_defaults = hiera('jenkins::casc_unclassified_defaults', {})
 
