@@ -265,6 +265,23 @@ class profile::jenkins {
       recurse => true,
     }
 
+    each(['jenkins', 'security', 'unclassified']) |$casc_type| {
+      $casc_defaults = lookup("jenkins::casc_${casc_type}_defaults", Hash, 'first', {})
+      $casc_overrides = lookup("jenkins::casc_${casc_type}", Hash, 'first', {})
+      # merge defaults with overides
+      $casc = $casc_defaults + $casc_overrides
+
+      if ( !empty($casc) ) {
+        each(keys($casc)) |$casc_key| {
+          file { "${casc_dir}/${casc_type}_${casc_key}.yaml":
+            ensure  => present,
+            owner   => 'jenkins',
+            group   => 'jenkins',
+            content => hash2yaml({$casc_type=>{$casc_key=>$casc[$casc_key]}}),
+        }
+      }
+    }
+
 #    # load the casc configuration
 #    $casc_jenkins_defaults = lookup('jenkins::casc_jenkins_defaults', Hash, 'first', {})
 #    $casc_jenkins = lookup('jenkins::casc_jenkins', Hash, 'first', {})
