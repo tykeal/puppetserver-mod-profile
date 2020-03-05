@@ -278,6 +278,7 @@ class profile::jenkins {
             owner   => 'jenkins',
             group   => 'jenkins',
             content => hash2yaml({$casc_type=>{$casc_key=>$casc[$casc_key]}}),
+          }
         }
       }
     }
