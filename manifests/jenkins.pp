@@ -265,56 +265,56 @@ class profile::jenkins {
       recurse => true,
     }
 
-    # load the casc configuration
-    $casc_jenkins_defaults = lookup('jenkins::casc_jenkins_defaults', Hash, 'first', {})
-    $casc_jenkins = lookup('jenkins::casc_jenkins', Hash, 'first', {})
-    # merge defaults and overrides
-    $jenkins_casc = $casc_jenkins_defaults + $casc_jenkins
-
-    if ( !empty($jenkins_casc) ) {
-      each(keys($jenkins_casc)) |$casc_key| {
-        file { "${casc_dir}/jenkins_${casc_key}.yaml":
-          ensure  => present,
-          owner   => 'jenkins',
-          group   => 'jenkins',
-          content => hash2yaml({jenkins=>{$casc_key=>$jenkins_casc[$casc_key]}}),
-        }
-      }
-    }
-
-    # load the casc security configuration
-    $casc_security_defaults = lookup('jenkins::casc_security_defaults', Hash, 'first', {})
-    $casc_security = lookup('jenkins::casc_security', Hash, 'first', {})
-    # merge defaults and overrides
-    $security_casc = $casc_security_defaults + $casc_security
-
-    if ( !empty($security_casc) ) {
-      each(keys($security_casc)) |$casc_key| {
-        file { "${casc_dir}/security_${casc_key}.yaml":
-          ensure  => present,
-          owner   => 'jenkins',
-          group   => 'jenkins',
-          content => hash2yaml({security=>{$casc_key=>$security_casc[$casc_key]}}),
-        }
-      }
-    }
-
-    # load the casc unclassified configuration
-    $casc_unclassified_defaults = lookup('jenkins::casc_unclassified_defaults', Hash, 'first', {})
-    $casc_unclassified = lookup('jenkins::casc_unclassified', Hash, 'first', {})
-    # merge defaults and overrides
-    $unclassified_casc = $casc_unclassified_defaults + $casc_unclassified
-
-    if ( !empty($unclassified_casc) ) {
-      each(keys($unclassified_casc)) |$casc_key| {
-        file { "${casc_dir}/unclassified_${casc_key}.yaml":
-          ensure  => present,
-          owner   => 'jenkins',
-          group   => 'jenkins',
-          content => hash2yaml({unclassified=>{casc_key=>$unclassified_casc[$casc_key]}}),
-        }
-      }
-    }
+#    # load the casc configuration
+#    $casc_jenkins_defaults = lookup('jenkins::casc_jenkins_defaults', Hash, 'first', {})
+#    $casc_jenkins = lookup('jenkins::casc_jenkins', Hash, 'first', {})
+#    # merge defaults and overrides
+#    $jenkins_casc = $casc_jenkins_defaults + $casc_jenkins
+#
+#    if ( !empty($jenkins_casc) ) {
+#      each(keys($jenkins_casc)) |$casc_key| {
+#        file { "${casc_dir}/jenkins_${casc_key}.yaml":
+#          ensure  => present,
+#          owner   => 'jenkins',
+#          group   => 'jenkins',
+#          content => hash2yaml({jenkins=>{$casc_key=>$jenkins_casc[$casc_key]}}),
+#        }
+#      }
+#    }
+#
+#    # load the casc security configuration
+#    $casc_security_defaults = lookup('jenkins::casc_security_defaults', Hash, 'first', {})
+#    $casc_security = lookup('jenkins::casc_security', Hash, 'first', {})
+#    # merge defaults and overrides
+#    $security_casc = $casc_security_defaults + $casc_security
+#
+#    if ( !empty($security_casc) ) {
+#      each(keys($security_casc)) |$casc_key| {
+#        file { "${casc_dir}/security_${casc_key}.yaml":
+#          ensure  => present,
+#          owner   => 'jenkins',
+#          group   => 'jenkins',
+#          content => hash2yaml({security=>{$casc_key=>$security_casc[$casc_key]}}),
+#        }
+#      }
+#    }
+#
+#    # load the casc unclassified configuration
+#    $casc_unclassified_defaults = lookup('jenkins::casc_unclassified_defaults', Hash, 'first', {})
+#    $casc_unclassified = lookup('jenkins::casc_unclassified', Hash, 'first', {})
+#    # merge defaults and overrides
+#    $unclassified_casc = $casc_unclassified_defaults + $casc_unclassified
+#
+#    if ( !empty($unclassified_casc) ) {
+#      each(keys($unclassified_casc)) |$casc_key| {
+#        file { "${casc_dir}/unclassified_${casc_key}.yaml":
+#          ensure  => present,
+#          owner   => 'jenkins',
+#          group   => 'jenkins',
+#          content => hash2yaml({unclassified=>{casc_key=>$unclassified_casc[$casc_key]}}),
+#        }
+#      }
+#    }
 
 
   } else {
