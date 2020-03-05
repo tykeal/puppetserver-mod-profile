@@ -229,7 +229,7 @@ class profile::jenkins {
   }
 
   $use_casc = hiera('jenkins::use_casc', false)
-  validate_boolean($use_casc)
+  validate_bool($use_casc)
 
   # get the ssh auth setup script in place
   file { "${groovy_loc}/set_jenkins_admin_ssh.groovy":
