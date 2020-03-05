@@ -279,7 +279,7 @@ class profile::jenkins {
       ensure  => present,
       owner   => 'jenkins',
       group   => 'jenkins',
-      content => hash2yaml($casc_file_settings, $jenkins_casc),
+      content => hash2yaml($jenkins_casc),
     }
   } else {
     $jenkins_auth = hiera('jenkins::auth')
