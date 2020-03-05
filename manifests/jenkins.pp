@@ -270,7 +270,7 @@ class profile::jenkins {
     # load the casc configuration
     $jenkins_casc = hiera('jenkins::casc', {})
     validate_hash($jenkins_casc)
-    notify{$jenkins_casc}
+    notify { $jenkins_casc: }
 
     $casc_file_settings = {
       header => '# THIS FILE MANAGED BY PUPPET',
