@@ -271,11 +271,19 @@ class profile::jenkins {
     $jenkins_casc = hiera('jenkins::casc', {})
     validate_hash($jenkins_casc)
 
+    if ( !empty($jenkins_casc) ) {
+      $casc = {
+        jenkins => $jenkins_casc,
+      }
+    } else {
+      $casc = {}
+    }
+
     file { "${casc_dir}/jenkins.yaml":
       ensure  => present,
       owner   => 'jenkins',
       group   => 'jenkins',
-      content => hash2yaml($jenkins_casc),
+      content => hash2yaml($casc),
     }
 
     # load the security configuration (which we keep separate)
