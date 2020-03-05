@@ -277,6 +277,17 @@ class profile::jenkins {
       group   => 'jenkins',
       content => hash2yaml($jenkins_casc),
     }
+
+    # load the security configuration (which we keep separate)
+    $jenkins_casc_securityrealm = hiera('jenkins::casc_securityrealm', {})
+    validate_has($jenkins_casc_securityrealm)
+
+    file { "${casc_dir}/securityrealm.yaml":
+      ensure  => present,
+      owner   => 'jenkins',
+      group   => 'jenkins',
+      content => hash2yaml($jenkins_casc_securityrealm),
+    }
   } else {
     $jenkins_auth = hiera('jenkins::auth')
     validate_string($jenkins_auth)
