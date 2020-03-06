@@ -265,6 +265,13 @@ class profile::jenkins {
       recurse => true,
     }
 
+    file { 'io.jenkins.plugins.casc.CasCGlobalConfig.xml':
+      ensure  => file,
+      owner   => 'jenkins',
+      group   => 'jenkins',
+      content => template("${module_name}/jenkins/CasCGlobalConfig.xml.erb"),
+    }
+
     $casc_toplevels = lookup('jenkins::casc_toplevels', Array, 'first',
       ['jenkins', 'security', 'unclassified'])
     each($casc_toplevels) |$casc_type| {
