@@ -265,7 +265,7 @@ class profile::jenkins {
       recurse => true,
     }
 
-    file { 'io.jenkins.plugins.casc.CasCGlobalConfig.xml':
+    file { '/var/lib/jenkins/io.jenkins.plugins.casc.CasCGlobalConfig.xml':
       ensure  => file,
       owner   => 'jenkins',
       group   => 'jenkins',
